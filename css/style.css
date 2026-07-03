@@ -566,3 +566,14 @@ a:hover { color: var(--red-600); }
 }
 .order-note-strip { flex-basis: 100%; margin-top: 2px; font-size: 12px; }
 .order-note { max-width: 760px; margin-left: auto; margin-right: auto; }
+
+/* 菜单顶部价格声明条（内容来自 MENU_PRICE_NOTICE，留空自动隐藏）*/
+.menu-price-notice {
+  background: linear-gradient(135deg, #FFF6DC, #FBEBBE);
+  border-top: 1px solid var(--gold-500);
+  border-bottom: 2px solid var(--gold-500);
+  color: var(--red-900);
+  font-size: 14px; font-weight: 600; line-height: 1.65;
+  text-align: center; padding: 14px 24px;
+}
+@media (max-width: 760px) { .menu-price-notice { font-size: 13px; padding: 12px 16px; } }

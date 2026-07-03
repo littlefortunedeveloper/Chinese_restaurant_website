@@ -98,7 +98,7 @@ ORDER_TITLE: Order Online
 ORDER_SUB: Skip the wait — order from your favorite platform 选择你常用的平台，在线下单
 ORDER_STRIP_LABEL: Order Online 在线订餐:
 
-ORDER_ONLINE: https://www.chinatownkitchenfonddulac.com
+ORDER_ONLINE: https://order.example.com
 ORDER_ONLINE_LABEL: Order Direct 官网直订
 # 官网直订按钮下方的小提示（留空则不显示）
 ORDER_ONLINE_NOTE: ⓘ Delivery depends on availability (may be unstable) — Pick-up recommended. For stable delivery, please call us at {PHONE} to request delivery, or place an order on any online platform: DoorDash, Uber Eats, Grubhub, Menufy or EatStreet. · 送餐视运力而定（可能不稳定），建议到店自取。如需稳定配送，请致电 {PHONE} 预约送餐，或通过任一平台下单：DoorDash、Uber Eats、Grubhub、Menufy 或 EatStreet。
@@ -136,6 +136,8 @@ SERVICE_TAG3: Delivery 送餐
 MENUPAGE_TITLE: Our Menu
 MENUPAGE_SUB: 菜单 · MENÚ
 MENUPAGE_NOTE: This menu contains the same items and prices in three languages · 本菜单三语内容及价格完全一致
+# 菜单顶部的醒目价格声明（金色横幅；留空则自动隐藏）
+MENU_PRICE_NOTICE: ⓘ Prices shown are our RESTAURANT prices (dine-in & pick-up & call-in requested delivery). Prices on delivery platforms — DoorDash, Uber Eats, Grubhub, Menufy, EatStreet — will be HIGHER due to fees charged by those platforms. · 本菜单显示的是餐厅价格（堂食/自取/电话预约送餐）。各外卖平台因收取平台费用，价格会高于餐厅价格。
 MENU_LEGEND: ◆ 辣 Hot Picante = Spicy (adjustable 辣度可调) · 小 sm/peq. = Small · 大 lg/grd. = Large · Prices subject to change 价格可能变动
 MENU_LOADING: Loading menu… 菜单加载中…
 # 菜品旁的辣味小徽章

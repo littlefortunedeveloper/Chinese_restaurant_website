@@ -64,6 +64,10 @@ function applyConfig(cfg) {
   const today = dayRows[new Date().getDay()];
   const row = document.querySelector(`[data-day="${today}"]`);
   if (row) row.classList.add('today');
+  // 带 data-hide-when-empty 的元素：配置留空时整块自动隐藏
+  document.querySelectorAll('[data-hide-when-empty]').forEach(el => {
+    if (!el.textContent.trim()) el.style.display = 'none';
+  });
 }
 
 /* ── 解析公告：日期 | 标题 | 内容 ─────────────────────────────────────────── */

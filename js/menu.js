@@ -147,15 +147,35 @@ function renderMenu(menu) {
   });
 
   // 滚动时高亮当前分类
+  // 关键：绝不在页面滚动过程中调用 scrollIntoView（它会打断/抢占页面滚动，造成卡顿）
+  // 只对 chip 条自身做横向 scrollTo —— 页面纵向滚动完全不受影响，丝般顺滑
   const sections = [...wrap.querySelectorAll('.menu-category')];
   const chips = [...nav.querySelectorAll('.cat-chip')];
+  const scroller = nav.closest('.cat-nav') || nav;   // 横向滚动容器
+
+  function centerChip(chip) {
+    if (!chip || !scroller.getBoundingClientRect) return;
+    const s = scroller.getBoundingClientRect();
+    const r = chip.getBoundingClientRect();
+    // 目标：把当前chip滚到条的水平中央（只动chip条，不动页面）
+    const left = scroller.scrollLeft + (r.left - s.left) - (s.width - r.width) / 2;
+    scroller.scrollTo({ left: Math.max(0, left), behavior: 'smooth' });
+  }
+
+  let activeIdx = -1;         // 记住当前分类，避免同一分类反复触发
+  let raf = 0;                // 用 requestAnimationFrame 合并高频回调
   const io = new IntersectionObserver(entries => {
-    entries.forEach(en => {
-      if (!en.isIntersecting) return;
+    for (const en of entries) {
+      if (!en.isIntersecting) continue;
       const idx = sections.indexOf(en.target);
-      chips.forEach((c, j) => c.classList.toggle('active', j === idx));
-      chips[idx]?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
-    });
+      if (idx === activeIdx) continue;
+      activeIdx = idx;
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        chips.forEach((c, j) => c.classList.toggle('active', j === idx));
+        centerChip(chips[idx]);
+      });
+    }
   }, { rootMargin: '-30% 0px -60% 0px' });
   sections.forEach(s => io.observe(s));
 }
