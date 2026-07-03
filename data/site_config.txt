@@ -140,6 +140,14 @@ MENUPAGE_NOTE: This menu contains the same items and prices in three languages �
 MENU_PRICE_NOTICE: ⓘ Prices shown are our RESTAURANT prices (dine-in & pick-up & call-in requested delivery). Prices on delivery platforms — DoorDash, Uber Eats, Grubhub, Menufy, EatStreet — will be HIGHER due to fees charged by those platforms. · 本菜单显示的是餐厅价格（堂食/自取/电话预约送餐）。各外卖平台因收取平台费用，价格会高于餐厅价格。
 MENU_LEGEND: ◆ 辣 Hot Picante = Spicy (adjustable 辣度可调) · 小 sm/peq. = Small · 大 lg/grd. = Large · Prices subject to change 价格可能变动
 MENU_LOADING: Loading menu… 菜单加载中…
+# 搜索栏文字
+MENU_SEARCH_PLACEHOLDER: 🔍 Search menu 搜索菜品 — name / number / 中文 / español
+MENU_SEARCH_NORESULT: No dishes found — try another keyword · 没有找到相关菜品，换个关键词试试
+MENU_SEARCH_COUNT: Found {COUNT} dishes · 找到 {COUNT} 道菜
+# 辣度筛选按钮
+MENU_FILTER_ALL: All 全部
+MENU_FILTER_SPICY: ◆ Spicy 辣
+MENU_FILTER_MILD: Not Spicy 不辣
 # 菜品旁的辣味小徽章
 MENU_SPICY_BADGE: ◆ 辣 Hot
 # 大小份价格前的标签

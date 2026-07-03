@@ -53,7 +53,25 @@
   </div>
 </div>
 
+<div class="menu-search-bar">
+  <div class="menu-search-box">
+    <span class="menu-search-icon">🔍</span>
+    <input type="text" id="menuSearch" autocomplete="off"
+           data-config-attr="placeholder:MENU_SEARCH_PLACEHOLDER"
+           placeholder="🔍 Search menu 搜索菜品 — name / number / 中文 / español">
+    <button id="menuSearchClear" class="menu-search-clear" style="display:none" aria-label="Clear">×</button>
+  </div>
+  <div class="menu-filter" id="menuFilter">
+    <button class="filter-chip active" data-filter="all" data-config="MENU_FILTER_ALL">All 全部</button>
+    <button class="filter-chip filter-chip-spicy" data-filter="spicy" data-config="MENU_FILTER_SPICY">◆ Spicy 辣</button>
+    <button class="filter-chip" data-filter="mild" data-config="MENU_FILTER_MILD">Not Spicy 不辣</button>
+  </div>
+  <div id="menuSearchCount" class="menu-search-count" style="display:none"></div>
+</div>
+
 <nav class="cat-nav"><div class="cat-nav-inner" id="catNav"></div></nav>
+
+<div id="menuNoResults" class="menu-noresults" style="display:none" data-config="MENU_SEARCH_NORESULT">No dishes found — try another keyword · 没有找到相关菜品，换个关键词试试</div>
 
 <main class="menu-wrap" id="menuWrap">
   <div class="menu-loading" data-config="MENU_LOADING">Loading menu… 菜单加载中…</div>

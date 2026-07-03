@@ -242,7 +242,7 @@ function initNav() {
 }
 
 /* ── 启动（仅在浏览器环境执行）───────────────────────────────────────────── */
-if (typeof document !== 'undefined' && typeof fetch !== 'undefined') {
+if (typeof window !== 'undefined' && typeof document !== 'undefined' && typeof fetch !== 'undefined') {
   /* 配置提前开始加载，并暴露给 menu.js 复用（避免重复请求）*/
   window.CONFIG_READY = fetchText('data/site_config.txt')
     .then(parseConfig)

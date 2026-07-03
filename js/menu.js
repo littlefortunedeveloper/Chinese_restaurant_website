@@ -116,8 +116,9 @@ function renderMenu(menu) {
         ? `<span class="sz">${szS} <b>$${esc(it.price.sm)}</b></span>
            <span class="sz">${szL} <b>$${esc(it.price.lg)}</b></span>`
         : `$${esc(it.price)}`;
+      const searchStr = `${num} ${name} ${it.zh} ${esClean}`.toLowerCase();
       return `
-        <article class="menu-item">
+        <article class="menu-item" data-search="${esc(searchStr)}" data-spicy="${spicy ? 1 : 0}">
           <div class="mi-num">${esc(num)}</div>
           <div class="mi-body">
             <div class="mi-name">${esc(name)}${spicy ? `<span class="spicy-badge">${esc(CFG.MENU_SPICY_BADGE || '◆ 辣 Hot')}</span>` : ''}</div>
@@ -180,6 +181,78 @@ function renderMenu(menu) {
   sections.forEach(s => io.observe(s));
 }
 
+/* ── 菜单搜索 + 辣度筛选（联合过滤）──────────────────────────────────────── */
+function initSearch() {
+  const input = document.getElementById('menuSearch');
+  const wrap  = document.getElementById('menuWrap');
+  if (!input || !wrap) return;
+  const clearBtn  = document.getElementById('menuSearchClear');
+  const countEl   = document.getElementById('menuSearchCount');
+  const noRes     = document.getElementById('menuNoResults');
+  const catNav    = document.querySelector('.cat-nav');
+  const filterBox = document.getElementById('menuFilter');
+  let spicyFilter = 'all';                            // all | spicy | mild
+
+  function apply() {
+    const q      = input.value.trim().toLowerCase();
+    const active = q !== '' || spicyFilter !== 'all'; // 有任一条件生效
+    const sections = wrap.querySelectorAll('.menu-category');
+
+    if (!active) {                                    // 无条件 → 全部恢复
+      sections.forEach(s => {
+        s.style.display = '';
+        s.querySelectorAll('.menu-item').forEach(it => it.style.display = '');
+      });
+      if (catNav)   catNav.style.display   = '';
+      if (countEl)  countEl.style.display  = 'none';
+      if (noRes)    noRes.style.display    = 'none';
+      if (clearBtn) clearBtn.style.display = 'none';
+      return;
+    }
+
+    if (clearBtn) clearBtn.style.display = q ? 'flex' : 'none';
+    if (catNav)   catNav.style.display   = 'none';    // 筛选中隐藏分类导航
+    let total = 0;
+    sections.forEach(sec => {
+      let n = 0;
+      sec.querySelectorAll('.menu-item').forEach(item => {
+        const okText  = !q || (item.dataset.search || '').includes(q);
+        const isSpicy = item.dataset.spicy === '1';
+        const okSpicy = spicyFilter === 'all' ||
+                        (spicyFilter === 'spicy' &&  isSpicy) ||
+                        (spicyFilter === 'mild'  && !isSpicy);
+        const hit = okText && okSpicy;                // 搜索 与 辣度 同时满足
+        item.style.display = hit ? '' : 'none';
+        if (hit) n++;
+      });
+      sec.style.display = n ? '' : 'none';
+      total += n;
+    });
+    if (countEl) {
+      const tpl = CFG.MENU_SEARCH_COUNT || 'Found {COUNT} dishes · 找到 {COUNT} 道菜';
+      countEl.textContent = tpl.replace(/\{COUNT\}/g, total);
+      countEl.style.display = '';
+    }
+    if (noRes) noRes.style.display = total ? 'none' : '';
+  }
+
+  let t = 0;
+  input.addEventListener('input', () => { clearTimeout(t); t = setTimeout(apply, 100); });
+  if (clearBtn) clearBtn.addEventListener('click', () => {
+    input.value = ''; apply(); input.focus();
+  });
+  if (filterBox) {                                    // 辣度按钮点击
+    filterBox.querySelectorAll('.filter-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        spicyFilter = btn.dataset.filter;
+        filterBox.querySelectorAll('.filter-chip')
+          .forEach(b => b.classList.toggle('active', b === btn));
+        apply();
+      });
+    });
+  }
+}
+
 /* ── 启动 ─────────────────────────────────────────────────────────────────── */
 async function initMenu() {
   const wrap = document.getElementById('menuWrap');
@@ -194,6 +267,7 @@ async function initMenu() {
     if (!menu.length) throw new Error('菜单数据为空');
     menu = applyAdjustToMenu(menu, priceAdjust);
     renderMenu(menu);
+    initSearch();                                     // 菜单渲染后启动搜索
   } catch (e) {
     if (wrap) wrap.innerHTML =
       `<div class="menu-error">⚠ 菜单加载失败：${esc(e.message)}<br>
