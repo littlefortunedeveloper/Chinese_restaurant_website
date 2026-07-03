@@ -115,7 +115,7 @@ ORDER_GRUBHUB_LABEL: Grubhub
 ORDER_MENUFY: https://www.chinatownkitchenfonddulacwi.com/
 ORDER_MENUFY_LABEL: Menufy
 
-ORDER_EATSTREET: https://eatstreet.com/fond-du-lac-wi/restaurants/chinatown-n-main-
+ORDER_EATSTREET: https://eatstreet.com/fond-du-lac-wi/restaurants/chinatown-n-main-st
 ORDER_EATSTREET_LABEL: EatStreet
 
 # 导航栏里的订餐链接文字
