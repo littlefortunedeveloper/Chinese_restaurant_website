@@ -5,5 +5,4 @@
 # 最新的写在最上面。删除整行即可撤下公告。改完 push 到 GitHub 自动生效。
 # ==============================================================================
 
-2026-06-20 | Holiday Hours 节日营业时间 | We will be CLOSED on July 4th for Independence Day. Normal hours resume July 5th. 本店7月4日国庆节休息一天，7月5日恢复正常营业。
 2026-06-10 | New! Pad Thai 新品泰式炒河粉 | Try our brand-new Pad Thai series — chicken, shrimp, beef & more, starting at $12.75! 全新泰式炒河粉系列隆重上市，鸡肉/虾仁/牛肉多种选择，$12.75起！
