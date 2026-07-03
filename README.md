@@ -104,11 +104,27 @@ BUTTON: 知道了 Got it
 弹窗**每位访客一次浏览只弹一次**（首页弹过，翻菜单页不再弹）；
 你更新内容后访客会重新看到一次新弹窗。想每页都弹：加 `SHOW_ONCE: OFF`。
 
-### 4. 改餐厅信息 → 编辑 `data/site_config.txt`
+### 4. 在线订餐平台链接 → 编辑 `data/site_config.txt`
+
+支持6个平台：**自家订餐系统（金色主按钮）· DoorDash · Uber Eats · Grubhub · Menufy · EatStreet**
+
+```
+ORDER_ONLINE: https://order.example.com          ← 你自己的订餐系统
+ORDER_DOORDASH: https://www.doordash.com/store/xxx
+ORDER_UBEREATS: https://www.ubereats.com/store/xxx
+...
+```
+
+- 换成你店铺在各平台的真实链接
+- **不用某平台？链接留空或删掉整行，按钮自动消失**
+- 全部留空 → 整个订餐区块自动隐藏
+- 按钮显示在：首页"Order Online"专区 + 菜单页顶部订餐条
+
+### 5. 改餐厅信息 → 编辑 `data/site_config.txt`
 
 电话、地址、营业时间、简介……都在这里，`KEY: 值` 格式，改完即生效。
 
-### 5. 加照片（可选）→ 上传到 `images/` 文件夹
+### 6. 加照片（可选）→ 上传到 `images/` 文件夹
 
 网站没有照片也很漂亮（自带中式花纹设计）。想放真实照片：
 上传 `images/about.jpg`，然后编辑 `index.html`，

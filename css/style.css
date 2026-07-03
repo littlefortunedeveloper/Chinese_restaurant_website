@@ -515,3 +515,54 @@ a:hover { color: var(--red-600); }
 }
 .popup-btn:hover { transform: translateY(-2px); filter: brightness(1.07); }
 @media (max-width: 480px) { .popup-card { padding: 28px 20px 24px; } }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   在线订餐平台按钮（由 site_config.txt 的 ORDER_* 控制显示）
+   ══════════════════════════════════════════════════════════════════════════ */
+.order-platforms {
+  display: flex; flex-wrap: wrap; gap: 14px; justify-content: center;
+}
+.order-btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 13px 26px; border-radius: 999px;
+  background: var(--paper); border: 1.5px solid var(--line);
+  color: var(--ink-900); font-size: 15px; font-weight: 700;
+  box-shadow: var(--shadow-sm);
+  transition: all .2s ease;
+}
+.order-btn:hover {
+  transform: translateY(-3px);
+  border-color: var(--gold-500); color: var(--red-800);
+  box-shadow: var(--shadow-md);
+}
+.order-dot {
+  width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto;
+  box-shadow: 0 0 0 3px rgba(0,0,0,.05);
+}
+.order-btn-primary {
+  background: linear-gradient(135deg, var(--gold-400), var(--gold-600));
+  border-color: transparent; color: var(--red-950);
+  box-shadow: 0 5px 18px rgba(201,162,39,.4);
+}
+.order-btn-primary:hover { color: var(--red-950); filter: brightness(1.07); border-color: transparent; }
+.order-btn-primary .order-dot { background: var(--red-800) !important; box-shadow: 0 0 0 3px rgba(59,10,10,.15); }
+
+/* 菜单页顶部的订餐条 */
+.order-strip {
+  background: var(--paper); border-bottom: 1px solid var(--line);
+  padding: 14px 24px;
+}
+.order-strip-inner {
+  max-width: var(--maxw); margin: 0 auto;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px;
+}
+.order-strip-label { color: var(--ink-500); font-size: 14px; font-weight: 600; }
+.order-strip .order-btn { padding: 9px 18px; font-size: 13.5px; }
+
+/* 官网直订按钮的配送提示（内容来自 ORDER_ONLINE_NOTE，留空自动隐藏）*/
+.order-note {
+  margin-top: 16px; text-align: center;
+  color: var(--ink-500); font-size: 13px; line-height: 1.6;
+}
+.order-note-strip { flex-basis: 100%; margin-top: 2px; font-size: 12px; }
+.order-note { max-width: 760px; margin-left: auto; margin-right: auto; }

@@ -16,10 +16,10 @@
 # 改完 push 到 GitHub，约1分钟后生效
 # ==============================================================================
 
-ENABLED: OFF
+ENABLED: ON
 TITLE: 📢 重要通知 Notice
 BUTTON: 知道了 Got it
 
-Test
-
+7月4日国庆节本店休息一天，7月5日恢复正常营业。
+We will be CLOSED on July 4th. Normal hours resume July 5th.
 订餐电话 Call to order: {PHONE}

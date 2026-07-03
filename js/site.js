@@ -94,6 +94,52 @@ function renderAnnouncements(list) {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
+   在线订餐平台按钮（链接来自 site_config.txt 的 ORDER_* 配置）
+   规则：链接为空/缺失/非http(s) → 该平台按钮不显示；全部为空 → 整个区块隐藏
+   ══════════════════════════════════════════════════════════════════════════ */
+const ORDER_PLATFORMS = [
+  //  配置key            品牌识别色（小圆点）  是否自家主按钮
+  ['ORDER_ONLINE',    '#C9A227', true ],   // 自家订餐系统（金色主按钮，无佣金）
+  ['ORDER_DOORDASH',  '#EB1700', false],
+  ['ORDER_UBEREATS',  '#06C167', false],
+  ['ORDER_GRUBHUB',   '#F63440', false],
+  ['ORDER_MENUFY',    '#2E7CF6', false],
+  ['ORDER_EATSTREET', '#7A3DF0', false],
+];
+
+function buildOrderButtons(cfg) {
+  return ORDER_PLATFORMS
+    .filter(([key]) => {
+      const url = (cfg[key] || '').trim();
+      return /^https?:\/\//i.test(url);              // 只接受 http/https（防注入）
+    })
+    .map(([key, color, primary]) => {
+      const url   = cfg[key].trim();
+      const label = cfg[key + '_LABEL'] || key.replace('ORDER_', '');
+      return `<a class="order-btn${primary ? ' order-btn-primary' : ''}"` +
+             ` href="${escapeHtml(url)}" target="_blank" rel="noopener">` +
+             `<span class="order-dot" style="background:${color}"></span>` +
+             `${escapeHtml(label)}</a>`;
+    }).join('');
+}
+
+function renderOrderPlatforms(cfg) {
+  const html = buildOrderButtons(cfg);
+  document.querySelectorAll('.order-platforms').forEach(box => {
+    box.innerHTML = html;
+    const section = box.closest('[data-order-section]');
+    if (section) section.style.display = html ? '' : 'none';  // 全空→隐藏整块
+  });
+  /* 官网直订的配送提示：仅当自家链接有效且NOTE非空时显示 */
+  const ownOk = /^https?:\/\//i.test((cfg.ORDER_ONLINE || '').trim());
+  const note  = (cfg.ORDER_ONLINE_NOTE || '').trim();
+  document.querySelectorAll('.order-note').forEach(el => {
+    if (ownOk && note) { el.textContent = note; el.style.display = ''; }
+    else               { el.textContent = '';   el.style.display = 'none'; }
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
    弹窗公告（data/popup.txt）
    格式：ENABLED: ON/OFF · TITLE: 标题 · BUTTON: 按钮文字 · 其余行=正文段落
    ══════════════════════════════════════════════════════════════════════════ */
@@ -203,6 +249,7 @@ if (typeof document !== 'undefined' && typeof fetch !== 'undefined') {
     initNav();
     const cfg = await window.CONFIG_READY;
     applyConfig(cfg);
+    renderOrderPlatforms(cfg);   // 订餐平台按钮
     /* 浏览器标签页标题：根据 body 的 data-page 取对应配置 */
     const page = document.body?.dataset?.page;
     const key  = page === 'menu' ? 'PAGE_TITLE_MENU' : 'PAGE_TITLE_HOME';
@@ -218,5 +265,5 @@ if (typeof document !== 'undefined' && typeof fetch !== 'undefined') {
 
 /* 供 Node 测试使用（浏览器中此段无副作用）*/
 if (typeof module !== 'undefined') {
-  module.exports = { parseConfig, resolveConfig, resolveStr, parsePopup, buildPopupHtml, popupKey, parseAnnouncements, escapeHtml };
+  module.exports = { parseConfig, resolveConfig, resolveStr, parsePopup, buildPopupHtml, popupKey, buildOrderButtons, ORDER_PLATFORMS, parseAnnouncements, escapeHtml };
 }

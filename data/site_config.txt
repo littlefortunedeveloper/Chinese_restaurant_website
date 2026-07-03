@@ -89,6 +89,38 @@ DISH3_DESC: Jumbo shrimp, scallops & crab meat in white sauce · 大虾干贝蟹
 
 FEATURED_BTN: See Full Menu — 229 Dishes 查看全部菜单
 
+# ══════════════════════ 在线订餐平台 ══════════════════════
+# 把每个平台后面换成你店铺的真实链接
+# ★ 不用某个平台？把链接删空（冒号后面留空）或删掉整行，按钮就不显示 ★
+# ORDER_ONLINE 是你自己的订餐系统（无佣金），会显示成金色主按钮
+ORDER_KICKER: 在线订餐
+ORDER_TITLE: Order Online
+ORDER_SUB: Skip the wait — order from your favorite platform 选择你常用的平台，在线下单
+ORDER_STRIP_LABEL: Order Online 在线订餐:
+
+ORDER_ONLINE: https://www.chinatownkitchenfonddulac.com
+ORDER_ONLINE_LABEL: Order Direct 官网直订
+# 官网直订按钮下方的小提示（留空则不显示）
+ORDER_ONLINE_NOTE: ⓘ Delivery depends on availability (may be unstable) — Pick-up recommended. For stable delivery, please call us at {PHONE} to request delivery, or place an order on any online platform: DoorDash, Uber Eats, Grubhub, Menufy or EatStreet. · 送餐视运力而定（可能不稳定），建议到店自取。如需稳定配送，请致电 {PHONE} 预约送餐，或通过任一平台下单：DoorDash、Uber Eats、Grubhub、Menufy 或 EatStreet。
+
+ORDER_DOORDASH: https://www.doordash.com/store/chinatown-kitchen-fond-du-lac-651003
+ORDER_DOORDASH_LABEL: DoorDash
+
+ORDER_UBEREATS: https://www.ubereats.com/store/chinatown-kitchen/qZtwjFMiWQi0pZA94KGrdg
+ORDER_UBEREATS_LABEL: Uber Eats
+
+ORDER_GRUBHUB: https://www.grubhub.com/restaurant/chinatown-kitchen-18-north-main-street-fond-du-lac/7651944
+ORDER_GRUBHUB_LABEL: Grubhub
+
+ORDER_MENUFY: https://www.chinatownkitchenfonddulacwi.com/
+ORDER_MENUFY_LABEL: Menufy
+
+ORDER_EATSTREET: https://eatstreet.com/fond-du-lac-wi/restaurants/chinatown-n-main-
+ORDER_EATSTREET_LABEL: EatStreet
+
+# 导航栏里的订餐链接文字
+NAV_ORDER: Order 订餐
+
 # ══════════════════════ 首页「营业信息」══════════════════════
 INFO_KICKER: 营业信息
 INFO_TITLE: Hours & Location
