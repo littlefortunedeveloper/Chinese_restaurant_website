@@ -8,10 +8,10 @@
 # ══════════════════════ 餐厅名称与品牌 ══════════════════════
 # ★ 改店名只需要改下面这两行（英文名一行、中文名一行）★
 # 全站所有地方（导航/大标题/页脚/介绍文字里的店名）都会自动跟着变
-NAME: Restaurant
+NAME: Chinatown Kitchen
 NAME_ZH: 饭店
 # 导航栏圆形logo里的单个汉字
-LOGO_CHAR: 饭
+LOGO_CHAR: 店
 TAGLINE: American Chinese Cuisine · Family Owned for Many Years
 TAGLINE_ZH: 美式中餐 · 家族经营很多年
 
@@ -20,8 +20,8 @@ PAGE_TITLE_HOME: Home
 PAGE_TITLE_MENU: Menu 菜单
 
 # ══════════════════════ 联系方式 ══════════════════════
-PHONE: (555) 123-4567
-PHONE_LINK: 5551234567
+PHONE: (920) 923-9688
+PHONE_LINK: 9209239688
 EMAIL: order@goldendragon.example.com
 ADDRESS_LINE1: 123 Main Street
 ADDRESS_LINE2: Springfield, ST 12345
