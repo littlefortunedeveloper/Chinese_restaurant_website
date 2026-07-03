@@ -9,7 +9,7 @@
 # ★ 改店名只需要改下面这两行（英文名一行、中文名一行）★
 # 全站所有地方（导航/大标题/页脚/介绍文字里的店名）都会自动跟着变
 NAME: Chinatown Kitchen
-NAME_ZH: 饭店
+NAME_ZH: 中城
 # 导航栏圆形logo里的单个汉字
 LOGO_CHAR: 店
 TAGLINE: American Chinese Cuisine · Family Owned for Many Years
