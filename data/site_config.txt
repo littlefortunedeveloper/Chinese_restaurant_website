@@ -22,10 +22,10 @@ PAGE_TITLE_MENU: Menu 菜单
 # ══════════════════════ 联系方式 ══════════════════════
 PHONE: (920) 923-9688
 PHONE_LINK: 9209239688
-EMAIL: order@goldendragon.example.com
-ADDRESS_LINE1: 123 Main Street
-ADDRESS_LINE2: Springfield, ST 12345
-MAP_LINK: https://maps.google.com/?q=123+Main+Street+Springfield
+EMAIL: n/a
+ADDRESS_LINE1: 18 N main st
+ADDRESS_LINE2: Fond Du Lac, WI 54935
+MAP_LINK: https://maps.google.com/?q=18+N+Main+St+Fond+du+Lac
 
 # ══════════════════════ 营业时间 ══════════════════════
 HOURS_MON: 11:00 AM – 9:30 PM
