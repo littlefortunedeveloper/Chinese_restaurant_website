@@ -13,7 +13,7 @@ NAME_ZH: 中城
 # 导航栏圆形logo里的单个汉字
 LOGO_CHAR: 店
 TAGLINE: American Chinese Cuisine · Family Owned for Many Years
-TAGLINE_ZH: 美式中餐 · 家族经营很多年
+TAGLINE_ZH: 美式中餐 · 家族经营多年
 
 # 浏览器标签页标题
 PAGE_TITLE_HOME: Home
