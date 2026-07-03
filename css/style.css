@@ -632,3 +632,38 @@ a:hover { color: var(--red-600); }
 .filter-chip-spicy.active {
   background: linear-gradient(135deg, var(--red-700), var(--red-900));
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   平台状态指示灯（绿=营业 黄=可预订 红=暂停，由 ORDER_*_STATUS 控制）
+   ══════════════════════════════════════════════════════════════════════════ */
+/* 状态徽章：圆角小方块+符号（✓/◷/✕），与左侧圆形品牌点形态完全不同，不会混淆 */
+.status-badge {
+  flex: 0 0 auto; margin-left: 4px;
+  width: 18px; height: 18px; border-radius: 5px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 900; line-height: 1; color: #fff;
+  font-family: -apple-system, 'Segoe UI', sans-serif;
+}
+.status-open   { background: #1FA84D; box-shadow: 0 1px 4px rgba(31,168,77,.4);  animation: statusPulse 2.2s ease-in-out infinite; }
+.status-future { background: #E8A400; box-shadow: 0 1px 4px rgba(232,164,0,.4); }
+.status-closed { background: #D63333; box-shadow: 0 1px 4px rgba(214,51,51,.35); }
+@keyframes statusPulse {
+  0%, 100% { box-shadow: 0 1px 4px rgba(31,168,77,.4); }
+  50%      { box-shadow: 0 1px 8px rgba(31,168,77,.65); }
+}
+
+/* 红灯禁用态：变灰、不可点击 */
+.order-btn-disabled {
+  opacity: .55; filter: grayscale(.4);
+  cursor: not-allowed; pointer-events: auto;
+}
+.order-btn-disabled:hover { transform: none; border-color: var(--line); box-shadow: var(--shadow-sm); }
+span.order-btn-primary.order-btn-disabled { color: var(--red-950); }
+
+/* 三色图例 */
+.order-status-legend {
+  display: flex; justify-content: center; gap: 18px; flex-wrap: wrap;
+  margin-top: 14px; font-size: 12.5px; color: var(--ink-500); font-weight: 600;
+}
+.legend-item { display: inline-flex; align-items: center; gap: 7px; }
+.order-status-legend-strip { flex-basis: 100%; margin-top: 6px; font-size: 11.5px; gap: 14px; }

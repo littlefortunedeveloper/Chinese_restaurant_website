@@ -28,7 +28,7 @@ ADDRESS_LINE2: Fond Du Lac, WI 54935
 MAP_LINK: https://maps.google.com/?q=18+N+Main+St+Fond+du+Lac
 
 # ══════════════════════ 营业时间 ══════════════════════
-HOURS_MON: 11:00 AM – 9:30 PM
+HOURS_MON: Closed 休息
 HOURS_TUE: 11:00 AM – 9:30 PM
 HOURS_WED: 11:00 AM – 9:30 PM
 HOURS_THU: 11:00 AM – 9:30 PM
@@ -117,6 +117,22 @@ ORDER_MENUFY_LABEL: Menufy
 
 ORDER_EATSTREET: https://eatstreet.com/fond-du-lac-wi/restaurants/chinatown-n-main-st
 ORDER_EATSTREET_LABEL: EatStreet
+
+# ── 平台状态指示灯 ──────────────────────────────────────────
+# 某平台网站临时故障/暂停合作 → 把对应 STATUS 改成 OFF（按钮变灰+红灯，不可点击）
+# 恢复了改回 ON。营业时间内=绿灯；打烊时段：官网直订自动红灯，
+# 其他平台自动黄灯（顾客仍可下预订单，开门后配送）
+ORDER_ONLINE_STATUS: OFF
+ORDER_DOORDASH_STATUS: ON
+ORDER_UBEREATS_STATUS: ON
+ORDER_GRUBHUB_STATUS: ON
+ORDER_MENUFY_STATUS: ON
+ORDER_EATSTREET_STATUS: ON
+
+# 指示灯图例文字（显示在按钮下方）
+ORDER_STATUS_OPEN: Open 营业中
+ORDER_STATUS_FUTURE: After hours — order for later 打烊中·可预订
+ORDER_STATUS_CLOSED: Unavailable 暂停服务
 
 # 导航栏里的订餐链接文字
 NAV_ORDER: Order 订餐

@@ -102,8 +102,8 @@ function renderAnnouncements(list) {
    规则：链接为空/缺失/非http(s) → 该平台按钮不显示；全部为空 → 整个区块隐藏
    ══════════════════════════════════════════════════════════════════════════ */
 const ORDER_PLATFORMS = [
-  //  配置key            品牌识别色（小圆点）  是否自家主按钮
-  ['ORDER_ONLINE',    '#C9A227', true ],   // 自家订餐系统（金色主按钮，无佣金）
+  //  配置key            品牌识别色           是否自家主按钮
+  ['ORDER_ONLINE',    '#C9A227', true ],
   ['ORDER_DOORDASH',  '#EB1700', false],
   ['ORDER_UBEREATS',  '#06C167', false],
   ['ORDER_GRUBHUB',   '#F63440', false],
@@ -111,24 +111,76 @@ const ORDER_PLATFORMS = [
   ['ORDER_EATSTREET', '#7A3DF0', false],
 ];
 
-function buildOrderButtons(cfg) {
+/* ── 营业时间解析："11:00 AM – 9:30 PM" → 分钟区间；Closed/不可解析 → null ── */
+function parseTimeRange(str) {
+  if (!str || /closed|休息/i.test(str)) return null;
+  const m = [...String(str).matchAll(/(\d{1,2}):(\d{2})\s*(AM|PM)/gi)];
+  if (m.length < 2) return null;
+  const toMin = (h, mm, ap) => (parseInt(h) % 12 + (/pm/i.test(ap) ? 12 : 0)) * 60 + parseInt(mm);
+  return { open: toMin(m[0][1], m[0][2], m[0][3]), close: toMin(m[1][1], m[1][2], m[1][3]) };
+}
+
+/* ── 现在餐厅是否营业中（读配置里今天的 HOURS_*，支持跨夜时段）─────────── */
+function isRestaurantOpen(cfg, now) {
+  now = now || new Date();
+  const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  const r = parseTimeRange(cfg['HOURS_' + days[now.getDay()]]);
+  if (!r) return false;
+  const cur = now.getHours() * 60 + now.getMinutes();
+  if (r.close <= r.open) return cur >= r.open || cur < r.close;   // 跨夜（如营业到凌晨）
+  return cur >= r.open && cur < r.close;
+}
+
+/* ── 单个平台的指示灯状态 ──────────────────────────────────────────────────
+   open   绿灯：营业中，正常下单
+   future 黄灯：打烊时段，平台可下预订单（仅第三方平台）
+   closed 红灯：店家手动OFF，或打烊时段的官网直订                          */
+function platformStatus(key, cfg, restaurantOpen) {
+  const raw = (cfg[key + '_STATUS'] || 'ON').trim();
+  const on  = /^(ON|YES|TRUE|开|1)$/i.test(raw);
+  if (!on) return 'closed';                                   // 店家手动关闭 → 红
+  if (restaurantOpen) return 'open';                          // 营业中 → 绿
+  return key === 'ORDER_ONLINE' ? 'closed' : 'future';       // 打烊：直订红/平台黄
+}
+
+function buildOrderButtons(cfg, restaurantOpen) {
+  if (restaurantOpen === undefined) restaurantOpen = isRestaurantOpen(cfg);
   return ORDER_PLATFORMS
-    .filter(([key]) => {
-      const url = (cfg[key] || '').trim();
-      return /^https?:\/\//i.test(url);              // 只接受 http/https（防注入）
-    })
+    .filter(([key]) => /^https?:\/\//i.test((cfg[key] || '').trim()))
     .map(([key, color, primary]) => {
-      const url   = cfg[key].trim();
-      const label = cfg[key + '_LABEL'] || key.replace('ORDER_', '');
-      return `<a class="order-btn${primary ? ' order-btn-primary' : ''}"` +
-             ` href="${escapeHtml(url)}" target="_blank" rel="noopener">` +
-             `<span class="order-dot" style="background:${color}"></span>` +
-             `${escapeHtml(label)}</a>`;
+      const url    = cfg[key].trim();
+      const label  = cfg[key + '_LABEL'] || key.replace('ORDER_', '');
+      const status = platformStatus(key, cfg, restaurantOpen);
+      const sTitle = status === 'open'   ? (cfg.ORDER_STATUS_OPEN   || 'Open')
+                   : status === 'future' ? (cfg.ORDER_STATUS_FUTURE || 'Order for later')
+                   :                       (cfg.ORDER_STATUS_CLOSED || 'Unavailable');
+      const icon   = status === 'open' ? '✓' : status === 'future' ? '◷' : '✕';
+      const inner  = `<span class="order-dot" style="background:${color}"></span>` +
+                     `${escapeHtml(label)}` +
+                     `<span class="status-badge status-${status}">${icon}</span>`;
+      const cls    = `order-btn${primary ? ' order-btn-primary' : ''}`;
+      if (status === 'closed') {                              // 红灯：不可点击
+        return `<span class="${cls} order-btn-disabled" title="${escapeHtml(sTitle)}">${inner}</span>`;
+      }
+      return `<a class="${cls}" href="${escapeHtml(url)}" target="_blank" rel="noopener"` +
+             ` title="${escapeHtml(sTitle)}">${inner}</a>`;
     }).join('');
+}
+
+/* ── 三色图例（按钮下方的颜色说明）────────────────────────────────────────── */
+function buildStatusLegend(cfg) {
+  return `<span class="legend-item"><span class="status-badge status-open">✓</span>${escapeHtml(cfg.ORDER_STATUS_OPEN || 'Open')}</span>` +
+         `<span class="legend-item"><span class="status-badge status-future">◷</span>${escapeHtml(cfg.ORDER_STATUS_FUTURE || 'Order for later')}</span>` +
+         `<span class="legend-item"><span class="status-badge status-closed">✕</span>${escapeHtml(cfg.ORDER_STATUS_CLOSED || 'Unavailable')}</span>`;
 }
 
 function renderOrderPlatforms(cfg) {
   const html = buildOrderButtons(cfg);
+  const legend = buildStatusLegend(cfg);
+  document.querySelectorAll('.order-status-legend').forEach(el => {
+    el.innerHTML = html ? legend : '';
+    el.style.display = html ? '' : 'none';
+  });
   document.querySelectorAll('.order-platforms').forEach(box => {
     box.innerHTML = html;
     const section = box.closest('[data-order-section]');
@@ -254,6 +306,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined' && typeof f
     const cfg = await window.CONFIG_READY;
     applyConfig(cfg);
     renderOrderPlatforms(cfg);   // 订餐平台按钮
+    setInterval(() => renderOrderPlatforms(cfg), 60000);  // 每分钟刷新指示灯
     /* 浏览器标签页标题：根据 body 的 data-page 取对应配置 */
     const page = document.body?.dataset?.page;
     const key  = page === 'menu' ? 'PAGE_TITLE_MENU' : 'PAGE_TITLE_HOME';
@@ -269,5 +322,5 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined' && typeof f
 
 /* 供 Node 测试使用（浏览器中此段无副作用）*/
 if (typeof module !== 'undefined') {
-  module.exports = { parseConfig, resolveConfig, resolveStr, parsePopup, buildPopupHtml, popupKey, buildOrderButtons, ORDER_PLATFORMS, parseAnnouncements, escapeHtml };
+  module.exports = { parseConfig, resolveConfig, resolveStr, parsePopup, buildPopupHtml, popupKey, buildOrderButtons, buildStatusLegend, parseTimeRange, isRestaurantOpen, platformStatus, ORDER_PLATFORMS, parseAnnouncements, escapeHtml };
 }
