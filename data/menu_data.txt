@@ -1,0 +1,332 @@
+# ==============================================================================
+# 菜单数据文件 | MENU DATA FILE | ARCHIVO DE DATOS DEL MENÚ
+# ==============================================================================
+#
+# ── 价格调整设置 PRICE ADJUSTMENT ──────────────────────────────────────────
+# 修改下面这行可以批量调整所有菜品价格，改完后重新运行 menu_generator.py 即可
+#
+#   PRICE_ADJUST: 0        → 不变（默认）
+#   PRICE_ADJUST: +1.50    → 每道菜涨 $1.50
+#   PRICE_ADJUST: -2.00    → 每道菜降 $2.00
+#   PRICE_ADJUST: +10%     → 所有价格涨 10%
+#   PRICE_ADJUST: -5%      → 所有价格降 5%
+#
+#   调整后价格自动四舍五入到最近的 $0.01
+#   也可以运行时直接传参数（优先级更高）：python3 menu_generator.py +10%
+#
+PRICE_ADJUST: 0
+#
+# ==============================================================================
+#
+# 格式说明：
+#   分类标题：=== 英文 / 中文 / 西班牙文 ===
+#   副标题：  SUBTITLE: 文字内容（不需要副标题则写 SUBTITLE: NONE）
+#   菜品行：  英文菜名 | 中文名 | 西班牙文名 | 价格
+#   单一价格：12.95
+#   大小份价：SM:4.75/LG:7.25
+#   辣菜：   在英文和西班牙文名字后面加 [SPICY]
+#   空行和 # 开头的行会被忽略
+#
+# 修改此文件后，重新运行 menu_generator.py 即可生成新的PDF
+# ==============================================================================
+
+=== Appetizers / 开胃菜 / Aperitivos ===
+SUBTITLE: NONE
+
+1.  Roast Pork Egg Roll | 春卷 | Rollo de Cerdo Asado | 2.60
+1a. Spring Roll (2) | 上海卷 | Rollitos de Primavera (2) | 4.20
+2.  Shrimp Egg Roll | 虾卷 | Rollo de Camarón | 2.80
+2a. Vegetable Roll (1) | 菜卷 | Rollo Vegetariano (1) | 2.50
+3.  Golden Fried Shrimp (10) | 珍宝虾 | Camarones Fritos Dorados (10) | 9.35
+4.  Fried Wonton (9) | 炸云吞 | Wonton Frito (9) | 7.25
+5.  Honey Chicken | 蜜汁鸡 | Pollo con Miel | 14.25
+6.  Fried or Boiled Dumpling (8) | 锅贴或水饺（8件） | Dumplings Fritos o Hervidos (8) | 8.80
+7.  Teriyaki Chicken (4) | 鸡串（4件） | Pollo Teriyaki (4) | 8.60
+8.  Boneless Ribs w. Honey | 无骨排 | Costillas sin Hueso con Miel | 12.55
+9.  Crab Rangoon (8) | 芝士吞 | Rangún de Cangrejo (8) | 8.50
+10. Chinese Donut (10) | 炸面包 | Donas Chinas (10) | 6.35
+11. Appetizer Sampler | 宝宝盘 | Selección de Aperitivos | 16.00
+
+=== Soup / 汤类 / Sopas ===
+SUBTITLE: w. Fried Noodle  ·  含炸面条  ·  con Fideo Frito
+
+12. Egg Drop Soup | 蛋花汤 | Sopa de Huevo | SM:4.75/LG:7.25
+13. Chicken Noodle or Rice Soup | 鸡麵或饭汤 | Sopa de Pollo con Fideos o Arroz | SM:4.75/LG:7.25
+14. Wonton Soup | 云吞汤 | Sopa de Wonton | SM:4.95/LG:7.85
+15. Wonton Egg Drop Mixed | 云吞蛋花汤 | Sopa Mixta Wonton y Huevo | SM:5.25/LG:8.85
+16. Hot & Sour Soup [SPICY] | 酸辣汤 | Sopa Agripicante [SPICY] | SM:4.95/LG:7.95
+17. Chinese Vegetable Soup | 素菜汤 | Sopa de Vegetales China | 9.85
+18. House Special Soup | 本楼汤 | Sopa Especial de la Casa | 9.95
+19. Seafood Soup | 海鲜汤 | Sopa de Mariscos | 10.65
+
+=== Pad Thai / 泰式炒河粉 / Pad Thai ===
+SUBTITLE: w. Peanuts, Bean Sprouts, Cilantro  ·  含花生、豆芽、香菜  ·  con Maní, Brotes de Soya, Cilantro
+
+20.  Vegetable Pad Thai [SPICY] | 素菜泰式炒河粉 | Pad Thai Vegetariano [SPICY] | 12.75
+20a. Pork Pad Thai [SPICY] | 猪肉泰式炒河粉 | Pad Thai de Cerdo [SPICY] | 13.75
+21.  Chicken Pad Thai [SPICY] | 鸡肉泰式炒河粉 | Pad Thai de Pollo [SPICY] | 13.75
+22.  Shrimp Pad Thai [SPICY] | 虾仁泰式炒河粉 | Pad Thai de Camarón [SPICY] | 14.75
+23.  Beef Pad Thai [SPICY] | 牛肉泰式炒河粉 | Pad Thai de Res [SPICY] | 14.75
+24.  Combination Pad Thai [SPICY] | 什锦泰式炒河粉 | Pad Thai Combinación [SPICY] | 14.95
+
+=== Chop Suey / 炒杂碎 / Chop Suey ===
+SUBTITLE: w. White Rice  ·  含白饭  ·  con Arroz Blanco
+
+26. Vegetable Chop Suey | 素菜什碎 | Chop Suey Vegetariano | SM:7.25/LG:11.25
+27. Roast Pork Chop Suey | 叉烧什碎 | Chop Suey con Cerdo Asado | SM:7.95/LG:13.75
+28. Chicken Chop Suey | 鸡什碎 | Chop Suey de Pollo | SM:7.95/LG:13.75
+29. Shrimp Chop Suey | 虾什碎 | Chop Suey de Camarón | SM:8.05/LG:14.25
+30. Beef Chop Suey | 牛什碎 | Chop Suey de Res | SM:8.05/LG:14.25
+31. House Special Chop Suey | 本楼什碎 | Chop Suey Especial de la Casa | 14.95
+
+=== Lo Mein / 捞面 / Fideos Lo Mein ===
+SUBTITLE: Soft Noodles  ·  软面条  ·  Fideos Suaves
+
+32. Vegetable Lo Mein | 素菜捞麺 | Lo Mein Vegetariano | SM:7.00/LG:11.35
+33. Roast Pork Lo Mein | 叉烧捞麺 | Lo Mein con Cerdo Asado | SM:7.55/LG:12.25
+34. Chicken Lo Mein | 鸡捞麺 | Lo Mein de Pollo | SM:7.55/LG:12.25
+35. Shrimp Lo Mein | 虾捞麺 | Lo Mein de Camarón | SM:8.00/LG:13.25
+36. Beef Lo Mein | 牛捞麺 | Lo Mein de Res | SM:8.00/LG:13.25
+37. House Special Lo Mein | 本楼捞麺 | Lo Mein Especial de la Casa | SM:8.25/LG:13.50
+
+=== Chow Mei Fun / 炒米粉 / Fideos de Arroz Fritos ===
+SUBTITLE: NONE
+
+38.  Vegetable Chow Mei Fun | 素菜炒米粉 | Fideos de Arroz Vegetarianos | 11.35
+39.  Roast Pork Chow Mei Fun | 叉烧炒米粉 | Fideos de Arroz con Cerdo Asado | 12.50
+40.  Chicken Chow Mei Fun | 鸡炒米粉 | Fideos de Arroz con Pollo | 12.50
+41.  Shrimp Chow Mei Fun | 虾炒米粉 | Fideos de Arroz con Camarón | 13.20
+42.  Beef Chow Mei Fun | 牛炒米粉 | Fideos de Arroz con Res | 13.20
+43.  House Special Chow Mei Fun | 本楼炒米粉 | Fideos de Arroz Especiales de la Casa | 13.50
+43a. Singapore Mei Fun [SPICY] | 星洲炒米粉 | Fideos de Arroz Singapur [SPICY] | 13.50
+
+=== Fried Rice / 炒饭 / Arroz Frito ===
+SUBTITLE: NONE
+
+44. Vegetable Fried Rice | 素菜炒饭 | Arroz Frito Vegetariano | SM:7.00/LG:11.35
+45. Roast Pork Fried Rice | 叉烧炒饭 | Arroz Frito con Cerdo Asado | SM:7.55/LG:11.95
+46. Chicken Fried Rice | 鸡炒饭 | Arroz Frito con Pollo | SM:7.55/LG:11.95
+47. Beef Fried Rice | 牛炒饭 | Arroz Frito con Res | SM:8.00/LG:12.95
+48. Shrimp Fried Rice | 虾炒饭 | Arroz Frito con Camarón | SM:8.00/LG:12.95
+49. House Special Fried Rice | 本楼炒饭 | Arroz Frito Especial de la Casa | SM:8.25/LG:13.25
+
+=== Egg Foo Young / 芙蓉蛋 / Tortilla China ===
+SUBTITLE: w. Rice & Gravy  ·  含饭和肉汁  ·  con Arroz y Salsa
+
+51. Vegetable Egg Foo Young (3) | 素菜芙蓉蛋 | Tortilla China Vegetariana (3) | 12.25
+52. Roast Pork Egg Foo Young (3) | 叉烧芙蓉蛋 | Tortilla China con Cerdo Asado (3) | 12.75
+53. Chicken Egg Foo Young (3) | 鸡芙蓉蛋 | Tortilla China con Pollo (3) | 12.75
+54. Shrimp Egg Foo Young (3) | 虾芙蓉蛋 | Tortilla China con Camarón (3) | 12.95
+55. Beef Egg Foo Young (3) | 牛芙蓉蛋 | Tortilla China con Res (3) | 12.95
+56. House Special Egg Foo Young (3) | 本楼芙蓉蛋 | Tortilla Especial de la Casa (3) | 14.25
+
+=== Vegetable / 素菜 / Vegetales ===
+SUBTITLE: w. White Rice on the Side  ·  含白饭  ·  con Arroz Blanco
+
+57. Sauteed Broccoli | 炒西兰花 | Brócoli Salteado | 12.35
+58. Bean Curd Szechuan Style [SPICY] (w. Meat) | 麻辣豆腐 | Tofu Estilo Sichuan [SPICY] (con Carne) | 12.35
+59. Broccoli w. Garlic Sauce [SPICY] | 鱼香兰花 | Brócoli con Salsa de Ajo [SPICY] | 12.35
+60. Bean Curd w. Black Bean Sauce | 豆豉豆腐 | Tofu con Salsa de Frijoles Negros | 12.35
+61. Buddhist Delight | 罗汉斋 | Deleite Budista | 12.35
+62. Sauteed Snow Peas | 炒雪豆 | Guisantes Nieve Salteados | 13.25
+63. Moo Shu Vegs. (w. 4 Pancakes) | 木须菜 | Moo Shu Vegetariano (con 4 Crepas) | 13.75
+
+=== Roast Pork / 叉烧类 / Cerdo Asado ===
+SUBTITLE: w. White Rice  ·  含白饭  ·  con Arroz Blanco
+
+64. Sweet & Sour Pork | 甜酸肉 | Cerdo Agridulce | 14.25
+65. Moo Shu Pork (w. 4 Pancakes) | 木须肉 | Moo Shu de Cerdo (con 4 Crepas) | 14.25
+66. Roast Pork w. Garlic Sauce [SPICY] | 鱼香叉烧 | Cerdo Asado con Salsa de Ajo [SPICY] | 14.25
+67. Roast Pork w. Mushroom | 蘑菇叉烧 | Cerdo Asado con Champiñones | SM:8.25/LG:14.25
+68. Roast Pork w. Broccoli | 叉烧芥兰 | Cerdo Asado con Brócoli | SM:8.25/LG:14.25
+69. Roast Pork w. Snow Peas | 雪豆叉烧 | Cerdo Asado con Guisantes Nieve | SM:8.25/LG:14.25
+70. Roast Pork w. Chinese Veg. | 叉烧白菜 | Cerdo Asado con Vegetales Chinos | SM:8.25/LG:14.25
+71. Sha Cha Roast Pork [SPICY] | 沙茶叉烧 | Cerdo Asado con Salsa Sha Cha [SPICY] | 14.25
+
+=== Poultry / 鸡肉类 / Platos de Pollo ===
+SUBTITLE: w. White Rice  ·  含白饭  ·  con Arroz Blanco
+
+72. Sweet & Sour Chicken | 甜酸鸡 | Pollo Agridulce | 14.25
+73. Moo Shu Chicken (w. 4 Pancakes) | 木须鸡 | Moo Shu de Pollo (con 4 Crepas) | 14.25
+74. Diced Chicken w. Cashew Nuts | 腰果鸡 | Pollo Troceado con Anacardos | 14.25
+75. Diced Chicken w. Hoisin Sauce | 普爆鸡 | Pollo Troceado con Salsa Hoisin | 14.25
+76. Curry Chicken w. Onion [SPICY] | 咖喱鸡 | Pollo al Curry con Cebolla [SPICY] | 14.25
+77. Kung Po Chicken [SPICY] | 宫保鸡丁 | Pollo Kung Pao [SPICY] | 14.25
+78. Chicken w. Black Bean Sauce | 豆豉鸡 | Pollo con Salsa de Frijoles Negros | SM:8.55/LG:14.25
+79. Moo Goo Gai Pan | 磨菇鸡片 | Pollo con Champiñones | SM:8.55/LG:14.25
+80. Chicken w. Garlic Sauce [SPICY] | 鱼香鸡 | Pollo con Salsa de Ajo [SPICY] | 14.25
+81. Boneless Chicken | 无骨鸡 | Pollo sin Hueso | 14.25
+82. Diced Chicken & Shrimp Combo Sauce | 爆双丁 | Pollo y Camarón en Salsa Combinada | 14.25
+83. Chicken w. Broccoli | 芥兰鸡 | Pollo con Brócoli | SM:8.55/LG:14.25
+84. Chicken w. Snow Peas | 雪豆鸡 | Pollo con Guisantes Nieve | SM:8.55/LG:14.25
+85. Chicken w. Almond Ding | 杏仁鸡丁 | Pollo Troceado con Almendras | SM:8.55/LG:14.25
+86. Sha Cha Chicken [SPICY] | 沙茶鸡 | Pollo con Salsa Sha Cha [SPICY] | 14.25
+
+=== Beef / 牛肉类 / Platos de Res ===
+SUBTITLE: w. White Rice  ·  含白饭  ·  con Arroz Blanco
+
+87. Pepper Steak w. Onion | 青椒牛 | Bistec con Pimienta y Cebolla | SM:8.95/LG:14.95
+88. Beef w. Chinese Veg. | 白菜牛 | Res con Vegetales Chinos | SM:8.95/LG:14.95
+89. Pepper Steak w. Tomato | 茄椒牛 | Bistec con Pimienta y Tomate | SM:8.95/LG:14.95
+90. Beef w. Oyster Sauce | 蚝油牛 | Res con Salsa de Ostras | SM:8.95/LG:14.95
+91. Curry Beef w. Onion [SPICY] | 咖喱洋葱牛 | Res al Curry con Cebolla [SPICY] | 14.95
+92. Shredded Beef w. Hot & Spicy [SPICY] | 幹烧牛肉丝 | Res Desmenuzada Picante [SPICY] | 14.95
+93. Shredded Beef w. Dried Red Pepper Peanuts [SPICY] | 宫保牛 | Res con Chile Rojo Seco y Cacahuetes [SPICY] | 14.95
+94. Beef w. Garlic Sauce [SPICY] | 鱼香牛 | Res con Salsa de Ajo [SPICY] | 14.95
+95. Beef w. Broccoli | 芥兰牛 | Res con Brócoli | SM:8.95/LG:14.95
+96. Beef w. Snow Peas | 雪豆牛 | Res con Guisantes Nieve | SM:8.95/LG:14.95
+97. Beef w. Black Bean Sauce | 豆豉牛 | Res con Salsa de Frijoles Negros | SM:8.95/LG:14.95
+98. Moo Shu Beef (w. 4 Pancakes) | 木须牛 | Moo Shu de Res (con 4 Crepas) | 14.95
+99. Sha Cha Beef [SPICY] | 沙茶牛 | Res con Salsa Sha Cha [SPICY] | 14.95
+
+=== Seafood / 海鲜类 / Mariscos ===
+SUBTITLE: w. White Rice  ·  含白饭  ·  con Arroz Blanco
+
+100. Moo Shu Shrimp (w. 4 Pancakes) | 木须虾 | Camarones Moo Shu (con 4 Crepas) | 15.95
+101. Baby Shrimp w. Cashew Nuts | 腰果虾仁 | Camarones con Anacardos | 15.95
+102. Baby Shrimp w. Dried Red Pepper Peanuts [SPICY] | 宫保虾仁 | Camarones con Chile Rojo y Cacahuetes [SPICY] | 15.95
+103. Shrimp in Szechuan Style [SPICY] | 幹烧虾仁 | Camarones Estilo Sichuan [SPICY] | 15.95
+104. Shrimp w. Chinese Veg. | 白菜虾 | Camarones con Vegetales Chinos | SM:9.25/LG:15.95
+105. Shrimp w. Lobster Sauce | 虾龙糊 | Camarones con Salsa de Langosta | SM:9.25/LG:15.95
+106. Shrimp w. Black Bean Sauce | 豆豉虾 | Camarones con Salsa de Frijoles Negros | SM:9.25/LG:15.95
+107. Shrimp w. Broccoli | 芥兰虾 | Camarones con Brócoli | SM:9.25/LG:15.95
+108. Shrimp w. Snow Peas | 雪豆虾 | Camarones con Guisantes Nieve | SM:9.25/LG:15.95
+109. Shrimp w. Garlic Sauce [SPICY] | 鱼香虾 | Camarones con Salsa de Ajo [SPICY] | 15.95
+110. Shrimp w. Almond Ding | 杏仁虾 | Camarones con Almendras | SM:9.25/LG:15.95
+112. House Special Shrimp | 本楼虾 | Camarones Especiales de la Casa | 15.95
+113. Curry Shrimp w. Onion [SPICY] | 咖喱虾 | Camarones al Curry con Cebolla [SPICY] | 15.95
+114. Sha Cha Shrimp [SPICY] | 沙茶虾 | Camarones con Salsa Sha Cha [SPICY] | 15.95
+
+=== Chef's Special / 厨师特色 / Especialidades del Chef ===
+SUBTITLE: w. White Rice  ·  含白饭  ·  con Arroz Blanco
+
+119. Lemon Chicken | 柠檬鸡 | Pollo al Limón | 14.75
+120. Hunan Chicken [SPICY] | 湖南鸡片 | Pollo Estilo Hunan [SPICY] | 14.75
+121. Tai-Chien Chicken [SPICY] | 大千鸡 | Pollo Tai-Chien [SPICY] | 14.75
+122. General Tso's Chicken [SPICY] | 左宗鸡 | Pollo del General Tso [SPICY] | 14.95
+123. Chicken & Fresh Mushroom w. Garlic Sauce [SPICY] | 鱼香蘑菇鸡 | Pollo con Champiñones y Ajo [SPICY] | 14.75
+124. Diced Chicken & Shrimp w. Fresh Mushroom | 蘑菇炒双丁 | Pollo y Camarón con Champiñones | 15.25
+125. Chicken w. Orange Flavor [SPICY] | 陈皮鸡 | Pollo con Sabor a Naranja [SPICY] | 14.95
+126. Four Seasons | 炒四季 | Cuatro Estaciones | 16.25
+127. Beef w. Orange Flavor [SPICY] | 陈皮牛 | Res con Sabor a Naranja [SPICY] | 16.25
+128. Perfect Match [SPICY] | 鱼香双鲜 | Combinación Perfecta [SPICY] | 17.95
+129. Tung Ting Shrimp | 洞庭虾 | Camarones Tung Ting | 17.55
+130. Mongolian Style Triple Delight | 葱爆三楼 | Triple Delicia Estilo Mongol | 16.25
+131. Seafood Delight | 海鲜大会 | Deleite de Mariscos | 22.55
+132. Happy Family | 全家福 | Familia Feliz | 20.25
+133. Sesame Chicken [SPICY] | 芝麻鸡 | Pollo con Sésamo [SPICY] | 14.95
+134. Seafood Pan Fried Noodle | 海鲜两黄面 | Fideos Fritos con Mariscos | 22.55
+135. Dragon & Phoenix Delight | 龙凤配 | Deleite Dragón y Fénix | 16.25
+136. Coconut Shrimp | 椰子虾 | Camarones con Coco | 19.95
+137. Sliced Pork Double Sauteed w. Chili Sauce (Szechuan) [SPICY] | 回锅肉 | Cerdo Doble Salsa con Chile Sichuan [SPICY] | 14.75
+138. Beef w. Mushroom & Bamboo Shoots | 双冬牛 | Res con Champiñones y Brotes de Bambú | 14.75
+139. Shrimp & Beef Hunan Style [SPICY] | 湖南两楼 | Camarón y Res Estilo Hunan [SPICY] | 16.25
+140. Mongolian Beef | 葱爆牛 | Res Estilo Mongol | 15.55
+141. Sauteed Shrimp | 炒虾 | Camarones Salteados | 19.95
+142. Hunan Beef [SPICY] | 湖南牛 | Res Estilo Hunan [SPICY] | 15.55
+143. Sesame Shrimp [SPICY] | 芝麻虾 | Camarones con Sésamo [SPICY] | 19.95
+144. Duet of Scallops & Beef w. Garlic Sauce [SPICY] | 鱼香乾贝牛 | Vieiras y Res con Salsa de Ajo [SPICY] | 18.95
+145. Triple Delight | 大三元 | Triple Delicia | 15.75
+146. Hunan Shrimp [SPICY] | 湖南虾楼 | Camarones Estilo Hunan [SPICY] | 17.55
+147. Sesame Beef [SPICY] | 芝麻牛 | Res con Sésamo [SPICY] | 15.55
+148. Chicken Szechuan Style [SPICY] | 四川鸡 | Pollo Estilo Sichuan [SPICY] | 14.75
+149. Triple Garlic Sauce [SPICY] | 鱼香三楼 | Triple con Salsa de Ajo [SPICY] | 15.55
+150. Jumbo Shrimp w. Mixed Veg. | 什菜虾 | Camarones Jumbo con Vegetales Mixtos | 17.55
+
+=== Special Combination Plates / 特价套餐 / Platos Combinados Especiales ===
+SUBTITLE: Served w. Pork Egg Roll & Pork Fried Rice  ·  含猪肉春卷和炒饭  ·  Incluye Rollo de Cerdo y Arroz Frito  ·  Add $3.35 extra for (2) Crab Rangoon & Can Soda / 另加$3.35可加（2件）蟹角和汽水 / Agregue $3.35 extra por (2) Rangún de Cangrejo y Refresco
+
+C1.  Chicken w. Snow Peas | 雪豆鸡 | Pollo con Guisantes Nieve | 12.15
+C2.  Shrimp w. Snow Peas | 雪豆虾 | Camarones con Guisantes Nieve | 12.15
+C3.  Chicken Chop Suey | 鸡什碎 | Chop Suey de Pollo | 12.15
+C4.  Shrimp Chop Suey | 虾什碎 | Chop Suey de Camarón | 12.15
+C5.  Roast Pork Egg Foo Young | 叉烧荣蛋 | Tortilla China con Cerdo Asado | 12.15
+C6.  Pepper Steak w. Onion | 青椒牛 | Bistec con Pimienta y Cebolla | 12.15
+C7.  Boneless Ribs w. Honey | 无骨排 | Costillas sin Hueso con Miel | 12.15
+C8.  Shrimp w. Lobster Sauce | 虾龙糊 | Camarones con Salsa de Langosta | 12.15
+C9.  Roast Pork w. Chinese Veg. | 叉烧白菜 | Cerdo Asado con Vegetales Chinos | 12.15
+C10. Sweet & Sour Pork | 甜酸肉 | Cerdo Agridulce | 12.15
+C11. Moo Goo Gai Pan | 磨菇鸡片 | Pollo con Champiñones | 12.15
+C12. Beef w. Broccoli | 芥兰牛 | Res con Brócoli | 12.15
+C13. Roast Pork Lo Mein | 叉烧捞麺 | Lo Mein con Cerdo Asado | 12.15
+C14. Chicken w. Broccoli | 芥兰鸡片 | Pollo con Brócoli | 12.15
+C15. Diced Chicken & Shrimp Combo | 爆双丁 | Pollo y Camarón en Salsa Combinada | 12.15
+C16. Chicken w. Garlic Sauce [SPICY] | 鱼香鸡 | Pollo con Salsa de Ajo [SPICY] | 12.15
+C17. Beef w. Garlic Sauce [SPICY] | 鱼香牛 | Res con Salsa de Ajo [SPICY] | 12.15
+C18. Sweet & Sour Chicken | 甜酸鸡 | Pollo Agridulce | 12.15
+C19. General Tso's Chicken [SPICY] | 左宗鸡 | Pollo del General Tso [SPICY] | 12.15
+C20. Sesame Chicken [SPICY] | 芝麻鸡 | Pollo con Sésamo [SPICY] | 12.15
+C21. Honey Chicken | 蜜汁鸡 | Pollo con Miel | 12.15
+C22. Orange Chicken [SPICY] | 陈皮鸡 | Pollo con Naranja [SPICY] | 12.15
+C23. Shrimp Egg Foo Young | 虾芙蓉蛋 | Tortilla China con Camarón | 12.15
+
+=== Special Diet Menu / 健康特选 / Menú Especial de Dieta ===
+SUBTITLE: w. White Rice on the Side  ·  含白饭  ·  con Arroz Blanco
+
+D1. Steamed Mixed Veg. | 素什锦 | Vegetales Mixtos al Vapor | 12.25
+D2. Chicken w. Broccoli | 芥兰鸡 | Pollo con Brócoli | 13.95
+D3. Chicken w. Snow Peas | 雪豆鸡 | Pollo con Guisantes Nieve | 14.25
+D4. Chicken w. Mixed Veg. | 什菜鸡 | Pollo con Vegetales Mixtos | 13.95
+D5. Shrimp w. Broccoli | 芥兰虾 | Camarones con Brócoli | 15.95
+D6. Shrimp w. Mixed Vegetable | 什菜虾 | Camarones con Vegetales Mixtos | 15.95
+D7. Scallop w. Mixed Vegetable | 什菜干贝 | Vieiras con Vegetales Mixtos | 18.25
+D8. Jumbo Shrimp, Scallops & Chicken w. Mixed Veg. | 什菜干贝鸡虾 | Camarones, Vieiras y Pollo con Vegetales | 18.25
+
+=== Side Order / 小食 / Orden Lateral ===
+SUBTITLE: NONE
+
+Fried Noodles | 炸面条 | Fideos Fritos | 1.35
+Fortune Cookies (5) | 幸运饼（5件） | Galletas de la Fortuna (5) | 1.35
+Almond Cookies (3) | 杏仁饼（3件） | Galletas de Almendra (3) | 1.65
+White Rice | 白饭 | Arroz Blanco | SM:3.85/LG:5.85
+Corn Nuggets | 玉米块 | Nuggets de Maíz | 9.25
+Mozzarella Cheese | 马苏里拉芝士 | Queso Mozzarella | 9.25
+Chicken Wings | 鸡翅 | Alitas de Pollo | 10.95
+
+=== Lunch Special / 午餐特价 / Especial del Almuerzo ===
+SUBTITLE: $9.35 per order / 每份$9.35 / $9.35 por orden  ·  Served 11:00am - 3:30pm / 供应时间11:00am-3:30pm  ·  w. Pork Fried Rice & Mini Pork Egg Roll  ·  含炒饭和迷你春卷  ·  con Arroz Frito y Mini Rollo de Cerdo
+
+L1.  Chicken w. Snow Peas | 雪豆鸡 | Pollo con Guisantes Nieve | 9.35
+L2.  Roast Pork w. Snow Peas | 雪豆叉烧 | Cerdo Asado con Guisantes Nieve | 9.35
+L3.  Beef w. Snow Peas | 雪豆牛肉 | Res con Guisantes Nieve | 9.35
+L4.  Shrimp w. Snow Peas | 雪豆虾仁 | Camarones con Guisantes Nieve | 9.35
+L5.  Chicken Chop Suey | 鸡什碎 | Chop Suey de Pollo | 9.35
+L6.  Roast Pork Chop Suey | 叉烧什碎 | Chop Suey con Cerdo Asado | 9.35
+L7.  Beef Chop Suey | 牛什碎 | Chop Suey de Res | 9.35
+L8.  Shrimp Chop Suey | 虾什碎 | Chop Suey de Camarón | 9.35
+L9.  Roast Pork Egg Foo Young | 叉烧芙蓉蛋 | Tortilla China con Cerdo Asado | 9.35
+L10. Shrimp Egg Foo Young | 虾芙蓉蛋 | Tortilla China con Camarón | 9.35
+L11. Pepper Steak w. Onion | 青椒牛 | Bistec con Pimienta y Cebolla | 9.35
+L12. Beef w. Broccoli | 芥兰牛 | Res con Brócoli | 9.35
+L13. Shrimp w. Broccoli | 芥兰虾 | Camarones con Brócoli | 9.35
+L14. Chicken w. Broccoli | 芥兰鸡 | Pollo con Brócoli | 9.35
+L15. Roast Pork w. Broccoli | 叉烧芥兰 | Cerdo Asado con Brócoli | 9.35
+L16. Shrimp w. Lobster Sauce | 虾龙糊 | Camarones con Salsa de Langosta | 9.35
+L17. Shrimp w. Chinese Vegetable | 白菜虾 | Camarones con Vegetales Chinos | 9.35
+L18. Sweet & Sour Pork | 甜酸肉 | Cerdo Agridulce | 9.35
+L19. Sweet & Sour Chicken | 甜酸鸡 | Pollo Agridulce | 9.35
+L20. Boneless Ribs & Honey | 无骨排 | Costillas sin Hueso con Miel | 9.35
+L21. Beef w. Chinese Vegetable | 白菜牛 | Res con Vegetales Chinos | 9.35
+L22. Moo Goo Gai Pan | 磨菇鸡片 | Pollo con Champiñones | 9.35
+L23. Roast Pork w. Chinese Veg. | 叉烧白菜 | Cerdo Asado con Vegetales Chinos | 9.35
+L24. Diced Chicken & Shrimp Combo | 爆双丁 | Pollo y Camarón Combinados | 9.35
+L25. Roast Pork Lo Mein | 叉烧捞麺 | Lo Mein con Cerdo Asado | 9.35
+L26. Chicken Lo Mein | 鸡捞麺 | Lo Mein de Pollo | 9.35
+L27. Beef Lo Mein | 牛捞麺 | Lo Mein de Res | 9.35
+L28. Shrimp Lo Mein | 虾捞麺 | Lo Mein de Camarón | 9.35
+L29. Chicken Almond Ding | 杏仁鸡丁 | Pollo Troceado con Almendras | 9.35
+L30. Mixed Vegetable | 什锦蔬菜 | Vegetales Mixtos | 9.35
+L31. Chicken w. Cashew Nuts | 腰果鸡 | Pollo con Anacardos | 9.35
+L32. Beef w. Garlic Sauce [SPICY] | 鱼香牛 | Res con Salsa de Ajo [SPICY] | 9.35
+L33. Chicken w. Garlic Sauce [SPICY] | 鱼香鸡 | Pollo con Salsa de Ajo [SPICY] | 9.35
+L34. Shrimp w. Garlic Sauce [SPICY] | 鱼香虾仁 | Camarones con Salsa de Ajo [SPICY] | 9.35
+L35. Curry Chicken or Beef [SPICY] | 咖喱鸡/牛 | Curry de Pollo o Res [SPICY] | 9.35
+L36. Kung Po Chicken w. Peanuts [SPICY] | 宫保鸡丁 | Pollo Kung Pao con Cacahuetes [SPICY] | 9.35
+L37. General Tso's Chicken [SPICY] | 左宗鸡 | Pollo del General Tso [SPICY] | 9.35
+L38. Sesame Chicken [SPICY] | 芝麻鸡 | Pollo con Sésamo [SPICY] | 9.35
+L39. Sha Cha Chicken [SPICY] | 沙茶鸡 | Pollo Sha Cha [SPICY] | 9.35
+L40. Sha Cha Beef [SPICY] | 沙茶牛 | Res Sha Cha [SPICY] | 9.35
+L41. Hunan Chicken [SPICY] | 湖南鸡 | Pollo Estilo Hunan [SPICY] | 9.35
+L42. Hunan Beef [SPICY] | 湖南牛肉 | Res Estilo Hunan [SPICY] | 9.35
+L43. Orange Chicken [SPICY] | 陈皮鸡 | Pollo con Naranja [SPICY] | 9.35
+L44. Honey Chicken | 蜜汁鸡 | Pollo con Miel | 9.35

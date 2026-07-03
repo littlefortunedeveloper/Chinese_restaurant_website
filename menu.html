@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Menu 菜单</title>
+<meta name="description" content="Full menu — appetizers, soups, lo mein, fried rice, chef's specials and more.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="menu">
+
+<header class="site-header">
+  <div class="nav-wrap">
+    <a class="brand" href="index.html">
+      <span class="brand-mark" data-config="LOGO_CHAR">饭</span>
+      <span class="brand-text">
+        <span class="brand-en" data-config="NAME">Restaurant</span><br>
+        <span class="brand-zh" data-config="NAME_ZH">饭店</span>
+      </span>
+    </a>
+    <button class="nav-toggle" aria-label="Menu">☰</button>
+    <nav class="main-nav">
+      <a href="index.html" data-config="NAV_HOME">Home 首页</a>
+      <a href="menu.html" class="active" data-config="NAV_MENU">Menu 菜单</a>
+      <a href="index.html#about" data-config="NAV_ABOUT">About 关于</a>
+      <a href="index.html#info" data-config="NAV_HOURS">Hours &amp; Location 营业信息</a>
+      <a class="nav-cta" href="#" data-config-attr="href:PHONE_LINK">☎ <span data-config="PHONE">(555) 123-4567</span></a>
+    </nav>
+  </div>
+</header>
+
+<section class="menu-hero">
+  <h1 data-config="MENUPAGE_TITLE">Our Menu</h1>
+  <div class="zh" data-config="MENUPAGE_SUB">菜单 · MENÚ</div>
+  <p class="note" data-config="MENUPAGE_NOTE">This menu contains the same items and prices in three languages · 本菜单三语内容及价格完全一致</p>
+</section>
+
+<div class="announcements" id="announcements"></div>
+
+<div class="menu-legend" data-config="MENU_LEGEND">◆ 辣 Hot Picante = Spicy (adjustable 辣度可调) · 小 sm/peq. = Small · 大 lg/grd. = Large · Prices subject to change 价格可能变动</div>
+
+<nav class="cat-nav"><div class="cat-nav-inner" id="catNav"></div></nav>
+
+<main class="menu-wrap" id="menuWrap">
+  <div class="menu-loading" data-config="MENU_LOADING">Loading menu… 菜单加载中…</div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <span class="brand-en" data-config="NAME">Restaurant</span>
+        <span class="brand-zh" style="margin-left:10px" data-config="NAME_ZH">饭店</span>
+        <p><span data-config="FOOTER_NOTE_EN">Please inform your server of any food allergies. Modifications may result in an extra charge.</span><br><span data-config="FOOTER_NOTE_ZH">如有食物过敏请告知服务员 · 更改食材可能收取额外费用</span></p>
+      </div>
+      <div class="footer-col">
+        <h4 data-config="FOOTER_NAV_TITLE">Navigate</h4>
+        <a href="index.html" data-config="NAV_HOME">Home 首页</a>
+        <a href="menu.html" data-config="NAV_MENU">Menu 菜单</a>
+        <a href="index.html#info" data-config="NAV_HOURS">Hours 营业时间</a>
+      </div>
+      <div class="footer-col">
+        <h4 data-config="FOOTER_CONTACT_TITLE">Contact</h4>
+        <a href="#" data-config-attr="href:PHONE_LINK" data-config="PHONE">(555) 123-4567</a>
+        <div data-config="ADDRESS_LINE1">123 Main Street</div>
+        <div data-config="ADDRESS_LINE2">Springfield, ST 12345</div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      © <span id="year"></span> <span data-config="NAME">Restaurant</span>. <span data-config="FOOTER_RIGHTS">All rights reserved.</span>
+    </div>
+  </div>
+</footer>
+
+<script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+<script src="js/site.js"></script>
+<script src="js/menu.js"></script>
+</body>
+</html>

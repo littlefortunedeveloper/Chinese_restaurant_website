@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Home</title>
+<meta name="description" content="Authentic Chinese cuisine. Dine-in, take-out & delivery.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="home">
+
+<header class="site-header">
+  <div class="nav-wrap">
+    <a class="brand" href="index.html">
+      <span class="brand-mark" data-config="LOGO_CHAR">饭</span>
+      <span class="brand-text">
+        <span class="brand-en" data-config="NAME">Restaurant</span><br>
+        <span class="brand-zh" data-config="NAME_ZH">饭店</span>
+      </span>
+    </a>
+    <button class="nav-toggle" aria-label="Menu">☰</button>
+    <nav class="main-nav">
+      <a href="index.html" class="active" data-config="NAV_HOME">Home 首页</a>
+      <a href="menu.html" data-config="NAV_MENU">Menu 菜单</a>
+      <a href="index.html#about" data-config="NAV_ABOUT">About 关于</a>
+      <a href="index.html#info" data-config="NAV_HOURS">Hours &amp; Location 营业信息</a>
+      <a class="nav-cta" href="#" data-config-attr="href:PHONE_LINK">☎ <span data-config="PHONE">(555) 123-4567</span></a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-zh" data-config="NAME_ZH">饭店</div>
+    <h1 data-config="NAME">Restaurant</h1>
+    <div class="hero-rule"></div>
+    <p class="hero-tagline" data-config="TAGLINE">American Chinese Cuisine · Family Owned for Many Years</p>
+    <p class="hero-tagline-zh" data-config="TAGLINE_ZH">美式中餐 · 家族经营很多年</p>
+    <div class="hero-actions">
+      <a class="btn btn-gold" href="menu.html" data-config="HERO_BTN_MENU">View Our Menu 查看菜单</a>
+      <a class="btn btn-ghost" href="#" data-config-attr="href:PHONE_LINK" data-config="HERO_BTN_CALL">☎ Call to Order 电话订餐</a>
+    </div>
+  </div>
+</section>
+
+<div class="announcements" id="announcements"></div>
+
+<section class="section" id="about">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-kicker" data-config="ABOUT_KICKER">关于我们</div>
+      <h2 class="section-title" data-config="ABOUT_TITLE">A Taste of Tradition</h2>
+    </div>
+    <div class="about-grid">
+      <div class="about-text">
+        <p data-config="ABOUT_TEXT">For many years, Restaurant has served American Chinese cuisine.</p>
+        <p class="about-zh" data-config="ABOUT_TEXT_ZH">很多年来，饭店为您呈现地道美式中餐。</p>
+      </div>
+      <div class="about-visual">
+        <div class="about-frame">
+          <!-- 有照片时：上传 images/about.jpg 后，把下面这行换成 <img src="images/about.jpg" alt=""> -->
+          <span class="glyph" data-config="ABOUT_GLYPH">福</span>
+        </div>
+        <div class="about-badge">
+          <div class="num" data-config="ABOUT_BADGE_NUM">多年</div>
+          <div class="lbl" data-config="ABOUT_BADGE_LABEL">Many Years 用心经营</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="cloud-divider"></div>
+
+<section class="section section-alt lattice-bg">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-kicker" data-config="FEATURED_KICKER">招牌推荐</div>
+      <h2 class="section-title" data-config="FEATURED_TITLE">House Favorites</h2>
+      <p class="section-sub" data-config="FEATURED_SUB">Our most-loved dishes, made fresh daily 每日新鲜现做的人气菜品</p>
+    </div>
+    <div class="feature-grid">
+      <article class="dish-card">
+        <div class="dish-visual"><span class="zh" data-config="DISH1_GLYPH">左宗鸡</span></div>
+        <div class="dish-body">
+          <h3 class="dish-name"><span data-config="DISH1_NAME">General Tso's Chicken</span> <span class="dish-price" data-config="DISH1_PRICE">$14.95</span></h3>
+          <p class="dish-desc" data-config="DISH1_DESC">Crispy chicken tossed in our signature sweet-spicy glaze · 香脆鸡块配秘制甜辣酱</p>
+        </div>
+      </article>
+      <article class="dish-card">
+        <div class="dish-visual"><span class="zh" data-config="DISH2_GLYPH">全家福</span></div>
+        <div class="dish-body">
+          <h3 class="dish-name"><span data-config="DISH2_NAME">Happy Family</span> <span class="dish-price" data-config="DISH2_PRICE">$20.25</span></h3>
+          <p class="dish-desc" data-config="DISH2_DESC">Shrimp, chicken, beef &amp; pork with garden vegetables · 虾鸡牛肉什锦大会</p>
+        </div>
+      </article>
+      <article class="dish-card">
+        <div class="dish-visual"><span class="zh" data-config="DISH3_GLYPH">海鲜大会</span></div>
+        <div class="dish-body">
+          <h3 class="dish-name"><span data-config="DISH3_NAME">Seafood Delight</span> <span class="dish-price" data-config="DISH3_PRICE">$22.55</span></h3>
+          <p class="dish-desc" data-config="DISH3_DESC">Jumbo shrimp, scallops &amp; crab meat in white sauce · 大虾干贝蟹肉白汁烩</p>
+        </div>
+      </article>
+    </div>
+    <p style="text-align:center; margin-top:36px;">
+      <a class="btn btn-gold" href="menu.html" data-config="FEATURED_BTN">See Full Menu — 229 Dishes 查看全部菜单</a>
+    </p>
+  </div>
+</section>
+
+<section class="section" id="info">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-kicker" data-config="INFO_KICKER">营业信息</div>
+      <h2 class="section-title" data-config="INFO_TITLE">Hours &amp; Location</h2>
+    </div>
+    <div class="info-grid">
+      <div class="info-card">
+        <h3><span class="info-icon">🕐</span><span data-config="INFO_HOURS_TITLE">Hours 营业时间</span></h3>
+        <table class="hours-table">
+          <tr data-day="MON"><td data-config="DAY_MON">Monday 周一</td><td data-config="HOURS_MON">11:00 AM – 9:30 PM</td></tr>
+          <tr data-day="TUE"><td data-config="DAY_TUE">Tuesday 周二</td><td data-config="HOURS_TUE">11:00 AM – 9:30 PM</td></tr>
+          <tr data-day="WED"><td data-config="DAY_WED">Wednesday 周三</td><td data-config="HOURS_WED">11:00 AM – 9:30 PM</td></tr>
+          <tr data-day="THU"><td data-config="DAY_THU">Thursday 周四</td><td data-config="HOURS_THU">11:00 AM – 9:30 PM</td></tr>
+          <tr data-day="FRI"><td data-config="DAY_FRI">Friday 周五</td><td data-config="HOURS_FRI">11:00 AM – 10:30 PM</td></tr>
+          <tr data-day="SAT"><td data-config="DAY_SAT">Saturday 周六</td><td data-config="HOURS_SAT">11:00 AM – 10:30 PM</td></tr>
+          <tr data-day="SUN"><td data-config="DAY_SUN">Sunday 周日</td><td data-config="HOURS_SUN">12:00 PM – 9:00 PM</td></tr>
+        </table>
+      </div>
+      <div class="info-card">
+        <h3><span class="info-icon">📍</span><span data-config="INFO_FIND_TITLE">Find Us 地址</span></h3>
+        <div class="contact-line"><div>
+          <strong data-config="ADDRESS_LINE1">123 Main Street</strong><br>
+          <span data-config="ADDRESS_LINE2">Springfield, ST 12345</span>
+        </div></div>
+        <div class="contact-line">
+          <a href="#" data-config-attr="href:MAP_LINK" data-config="MAP_LINK_TEXT" target="_blank" rel="noopener">→ Open in Google Maps 在地图中打开</a>
+        </div>
+      </div>
+      <div class="info-card">
+        <h3><span class="info-icon">☎</span><span data-config="INFO_ORDER_TITLE">Order 订餐</span></h3>
+        <div class="contact-line">
+          <a class="big" href="#" data-config-attr="href:PHONE_LINK"><span data-config="PHONE">(555) 123-4567</span></a>
+        </div>
+        <div class="services-tags">
+          <span class="tag" data-config="SERVICE_TAG1">Dine-In 堂食</span>
+          <span class="tag" data-config="SERVICE_TAG2">Take-Out 外卖</span>
+          <span class="tag" data-config="SERVICE_TAG3">Delivery 送餐</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <span class="brand-en" data-config="NAME">Restaurant</span>
+        <span class="brand-zh" style="margin-left:10px" data-config="NAME_ZH">饭店</span>
+        <p data-config="TAGLINE">American Chinese Cuisine · Family Owned for Many Years</p>
+      </div>
+      <div class="footer-col">
+        <h4 data-config="FOOTER_NAV_TITLE">Navigate</h4>
+        <a href="index.html" data-config="NAV_HOME">Home 首页</a>
+        <a href="menu.html" data-config="NAV_MENU">Menu 菜单</a>
+        <a href="index.html#about" data-config="NAV_ABOUT">About 关于</a>
+        <a href="index.html#info" data-config="NAV_HOURS">Hours 营业时间</a>
+      </div>
+      <div class="footer-col">
+        <h4 data-config="FOOTER_CONTACT_TITLE">Contact</h4>
+        <a href="#" data-config-attr="href:PHONE_LINK" data-config="PHONE">(555) 123-4567</a>
+        <div data-config="ADDRESS_LINE1">123 Main Street</div>
+        <div data-config="ADDRESS_LINE2">Springfield, ST 12345</div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      © <span id="year"></span> <span data-config="NAME">Restaurant</span>. <span data-config="FOOTER_RIGHTS">All rights reserved.</span>
+    </div>
+  </div>
+</footer>
+
+<script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+<script src="js/site.js"></script>
+</body>
+</html>

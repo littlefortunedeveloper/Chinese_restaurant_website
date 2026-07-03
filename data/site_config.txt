@@ -1,0 +1,120 @@
+# ==============================================================================
+# 网站文字总配置 | ALL WEBSITE TEXT LIVES HERE
+# ==============================================================================
+# 网站上的每一个字都在这个文件里，改这里 → Commit → 网站自动更新
+# 格式：KEY: 值    （# 开头是注释；冒号后面的整段都是值）
+# ==============================================================================
+
+# ══════════════════════ 餐厅名称与品牌 ══════════════════════
+# ★ 改店名只需要改下面这两行（英文名一行、中文名一行）★
+# 全站所有地方（导航/大标题/页脚/介绍文字里的店名）都会自动跟着变
+NAME: Restaurant
+NAME_ZH: 饭店
+# 导航栏圆形logo里的单个汉字
+LOGO_CHAR: 饭
+TAGLINE: American Chinese Cuisine · Family Owned for Many Years
+TAGLINE_ZH: 美式中餐 · 家族经营很多年
+
+# 浏览器标签页标题
+PAGE_TITLE_HOME: Home
+PAGE_TITLE_MENU: Menu 菜单
+
+# ══════════════════════ 联系方式 ══════════════════════
+PHONE: (555) 123-4567
+PHONE_LINK: 5551234567
+EMAIL: order@goldendragon.example.com
+ADDRESS_LINE1: 123 Main Street
+ADDRESS_LINE2: Springfield, ST 12345
+MAP_LINK: https://maps.google.com/?q=123+Main+Street+Springfield
+
+# ══════════════════════ 营业时间 ══════════════════════
+HOURS_MON: 11:00 AM – 9:30 PM
+HOURS_TUE: 11:00 AM – 9:30 PM
+HOURS_WED: 11:00 AM – 9:30 PM
+HOURS_THU: 11:00 AM – 9:30 PM
+HOURS_FRI: 11:00 AM – 10:30 PM
+HOURS_SAT: 11:00 AM – 10:30 PM
+HOURS_SUN: 12:00 PM – 9:00 PM
+
+# 星期名称显示文字
+DAY_MON: Monday 周一
+DAY_TUE: Tuesday 周二
+DAY_WED: Wednesday 周三
+DAY_THU: Thursday 周四
+DAY_FRI: Friday 周五
+DAY_SAT: Saturday 周六
+DAY_SUN: Sunday 周日
+
+# ══════════════════════ 导航栏 ══════════════════════
+NAV_HOME: Home 首页
+NAV_MENU: Menu 菜单
+NAV_ABOUT: About 关于
+NAV_HOURS: Hours & Location 营业信息
+
+# ══════════════════════ 首页 Hero 大图区 ══════════════════════
+HERO_BTN_MENU: View Our Menu 查看菜单
+HERO_BTN_CALL: ☎ Call to Order 电话订餐
+
+# ══════════════════════ 首页「关于我们」══════════════════════
+ABOUT_KICKER: 关于我们
+ABOUT_TITLE: A Taste of Tradition
+ABOUT_TEXT: For many years, {NAME} has served American Chinese cuisine. Every dish is prepared fresh to order using quality ingredients — from our hand-rolled egg rolls to our signature General Tso's Chicken. Whether you're joining us for a family dinner or ordering take-out, we're honored to bring the flavors of home to your table.
+ABOUT_TEXT_ZH: 很多年来，{NAME_ZH}为您呈现地道美式中餐。每道菜均采用新鲜食材现点现做。无论堂食还是外卖，我们都以诚意款待每一位客人。
+# 右侧装饰大字
+ABOUT_GLYPH: 福
+# 左下角徽章（数字 + 标签）
+ABOUT_BADGE_NUM: 多年
+ABOUT_BADGE_LABEL: Many Years 用心经营
+
+# ══════════════════════ 首页「招牌推荐」══════════════════════
+FEATURED_KICKER: 招牌推荐
+FEATURED_TITLE: House Favorites
+FEATURED_SUB: Our most-loved dishes, made fresh daily 每日新鲜现做的人气菜品
+
+# 三张招牌菜卡片（大字/英文名/价格/描述）
+DISH1_GLYPH: 左宗鸡
+DISH1_NAME: General Tso's Chicken
+DISH1_PRICE: $14.95
+DISH1_DESC: Crispy chicken tossed in our signature sweet-spicy glaze · 香脆鸡块配秘制甜辣酱
+
+DISH2_GLYPH: 全家福
+DISH2_NAME: Happy Family
+DISH2_PRICE: $20.25
+DISH2_DESC: Shrimp, chicken, beef & pork with garden vegetables · 虾鸡牛肉什锦大会
+
+DISH3_GLYPH: 海鲜大会
+DISH3_NAME: Seafood Delight
+DISH3_PRICE: $22.55
+DISH3_DESC: Jumbo shrimp, scallops & crab meat in white sauce · 大虾干贝蟹肉白汁烩
+
+FEATURED_BTN: See Full Menu — 229 Dishes 查看全部菜单
+
+# ══════════════════════ 首页「营业信息」══════════════════════
+INFO_KICKER: 营业信息
+INFO_TITLE: Hours & Location
+INFO_HOURS_TITLE: Hours 营业时间
+INFO_FIND_TITLE: Find Us 地址
+INFO_ORDER_TITLE: Order 订餐
+MAP_LINK_TEXT: → Open in Google Maps 在地图中打开
+SERVICE_TAG1: Dine-In 堂食
+SERVICE_TAG2: Take-Out 外卖
+SERVICE_TAG3: Delivery 送餐
+
+# ══════════════════════ 菜单页 ══════════════════════
+MENUPAGE_TITLE: Our Menu
+MENUPAGE_SUB: 菜单 · MENÚ
+MENUPAGE_NOTE: This menu contains the same items and prices in three languages · 本菜单三语内容及价格完全一致
+MENU_LEGEND: ◆ 辣 Hot Picante = Spicy (adjustable 辣度可调) · 小 sm/peq. = Small · 大 lg/grd. = Large · Prices subject to change 价格可能变动
+MENU_LOADING: Loading menu… 菜单加载中…
+# 菜品旁的辣味小徽章
+MENU_SPICY_BADGE: ◆ 辣 Hot
+# 大小份价格前的标签
+MENU_SIZE_SMALL: 小 sm
+MENU_SIZE_LARGE: 大 lg
+
+# ══════════════════════ 页脚 ══════════════════════
+FOOTER_NAV_TITLE: Navigate
+FOOTER_CONTACT_TITLE: Contact
+FOOTER_NOTE_EN: Please inform your server of any food allergies. Modifications may result in an extra charge.
+FOOTER_NOTE_ZH: 如有食物过敏请告知服务员 · 更改食材可能收取额外费用
+FOOTER_RIGHTS: All rights reserved.
