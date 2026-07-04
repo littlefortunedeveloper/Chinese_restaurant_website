@@ -29,12 +29,12 @@ MAP_LINK: https://maps.google.com/?q=18+N+Main+St+Fond+du+Lac
 
 # ══════════════════════ 营业时间 ══════════════════════
 HOURS_MON: Closed 休息
-HOURS_TUE: 11:00 AM – 9:30 PM
-HOURS_WED: 11:00 AM – 9:30 PM
-HOURS_THU: 11:00 AM – 9:30 PM
-HOURS_FRI: 11:00 AM – 10:30 PM
-HOURS_SAT: 11:00 AM – 10:30 PM
-HOURS_SUN: 12:00 PM – 9:00 PM
+HOURS_TUE: 10:00 AM – 9:30 PM
+HOURS_WED: 10:00 AM – 9:30 PM
+HOURS_THU: 10:00 AM – 9:30 PM
+HOURS_FRI: 10:00 AM – 10:00 PM
+HOURS_SAT: 10:00 AM – 10:00 PM
+HOURS_SUN: 10:00 PM – 9:00 PM
 
 # 星期名称显示文字
 DAY_MON: Monday 周一
@@ -122,7 +122,7 @@ ORDER_EATSTREET_LABEL: EatStreet
 # 某平台网站临时故障/暂停合作 → 把对应 STATUS 改成 OFF（按钮变灰+红灯，不可点击）
 # 恢复了改回 ON。营业时间内=绿灯；打烊时段：官网直订自动红灯，
 # 其他平台自动黄灯（顾客仍可下预订单，开门后配送）
-ORDER_ONLINE_STATUS: ON
+ORDER_ONLINE_STATUS: OFF
 ORDER_DOORDASH_STATUS: ON
 ORDER_UBEREATS_STATUS: ON
 ORDER_GRUBHUB_STATUS: ON
