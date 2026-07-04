@@ -136,7 +136,7 @@ COUNTDOWN_MINUTES: 45
 COUNTDOWN_OPENING: ⏰ Opening soon — {MIN} min · 即将开门，还有 {MIN} 分钟
 COUNTDOWN_CLOSING: ⏰ Closing soon — {MIN} min · 即将打烊，还有 {MIN} 分钟
 # 打烊期间常驻的顶部提示（留空=不显示；距开门≤N分钟时自动换成开门倒计时）
-COUNTDOWN_CLOSED: Restaurant is currently closed — please come back tomorrow · 本店现已打烊，欢迎明天光临
+COUNTDOWN_CLOSED: Restaurant is currently closed — please come back during regular business hours · 本店现已打烊
 
 # ── 打烊前截单时间（分钟）──────────────────────────────
 # 平台在打烊前 N 分钟停止接当日单 → 该按钮提前变黄灯◷（预订单仍可下）
