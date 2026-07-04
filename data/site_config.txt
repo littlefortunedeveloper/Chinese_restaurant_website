@@ -122,12 +122,19 @@ ORDER_EATSTREET_LABEL: EatStreet
 # 某平台网站临时故障/暂停合作 → 把对应 STATUS 改成 OFF（按钮变灰+红灯，不可点击）
 # 恢复了改回 ON。营业时间内=绿灯；打烊时段：官网直订自动红灯，
 # 其他平台自动黄灯（顾客仍可下预订单，开门后配送）
-ORDER_ONLINE_STATUS: OFF
+ORDER_ONLINE_STATUS: ON
 ORDER_DOORDASH_STATUS: ON
 ORDER_UBEREATS_STATUS: ON
 ORDER_GRUBHUB_STATUS: ON
 ORDER_MENUFY_STATUS: ON
 ORDER_EATSTREET_STATUS: ON
+
+# ── 开门/打烊倒计时横幅 ────────────────────────────────────
+# 距开门或打烊不足 N 分钟时，网站顶部显示倒计时（改成 0 = 关闭此功能）
+COUNTDOWN_MINUTES: 30
+# {MIN} 会自动替换成剩余分钟数
+COUNTDOWN_OPENING: ⏰ Opening soon — {MIN} min · 即将开门，还有 {MIN} 分钟
+COUNTDOWN_CLOSING: ⏰ Closing soon — {MIN} min · 即将打烊，还有 {MIN} 分钟
 
 # 指示灯图例文字（显示在按钮下方）
 ORDER_STATUS_OPEN: Open 营业中

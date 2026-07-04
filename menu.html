@@ -7,7 +7,10 @@
 <meta name="description" content="Full menu — appetizers, soups, lo mein, fried rice, chef's specials and more.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600;700&display=swap" rel="stylesheet">
+<script>/* 字体异步加载：JS注入不阻塞渲染，且不含内联事件属性 */
+(function(){try{var l=document.createElement('link');l.rel='stylesheet';
+l.href='https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600;700&display=swap';document.head.appendChild(l);}catch(e){}})();</script>
+<noscript><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600;700&display=swap" rel="stylesheet"></noscript>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body data-page="menu">
@@ -32,6 +35,8 @@
     </nav>
   </div>
 </header>
+
+<div class="countdown-banner" id="countdownBanner" style="display:none"></div>
 
 <section class="menu-hero">
   <h1 data-config="MENUPAGE_TITLE">Our Menu</h1>

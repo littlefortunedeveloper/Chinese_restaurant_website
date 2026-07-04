@@ -276,7 +276,9 @@ async function initMenu() {
 }
 
 if (typeof document !== 'undefined') {
-  document.addEventListener('DOMContentLoaded', initMenu);
+  // 兼容脚本延迟注入的环境：readyState已过loading直接启动
+  if (document.readyState !== 'loading') initMenu();
+  else document.addEventListener('DOMContentLoaded', initMenu);
 }
 
 /* 供 Node 测试使用 */

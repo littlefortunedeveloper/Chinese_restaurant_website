@@ -131,6 +131,58 @@ function isRestaurantOpen(cfg, now) {
   return cur >= r.open && cur < r.close;
 }
 
+/* ── 开门/打烊倒计时 ────────────────────────────────────────────────────────
+   距开门 ≤N 分钟 → {mode:'opening', minutes}
+   距打烊 ≤N 分钟 → {mode:'closing', minutes}
+   其余时间 / 当天休息 / COUNTDOWN_MINUTES=0 → null（横幅隐藏）
+   支持跨夜营业（如 5PM–1AM 的凌晨0:40 = 距打烊20分钟）*/
+function getCountdown(cfg, now) {
+  const W = cfg.COUNTDOWN_MINUTES === undefined ? 30 : (parseFloat(cfg.COUNTDOWN_MINUTES) || 0);
+  if (W <= 0) return null;
+  /* 演示钩子：window.__DEMO_NOW__ 存在时用它当"现在"（仅演示页用，正式站无影响）*/
+  now = now || ((typeof window !== 'undefined' && window.__DEMO_NOW__)
+                ? new Date(window.__DEMO_NOW__) : new Date());
+  const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  const r = parseTimeRange(cfg['HOURS_' + days[now.getDay()]]);
+  if (!r) return null;
+  const nowF = now.getHours()*60 + now.getMinutes() + now.getSeconds()/60;
+  const mk = (mode, diff) => (diff > 0 && diff <= W) ? { mode, minutes: Math.ceil(diff) } : null;
+  if (r.close <= r.open) {                        // 跨夜时段
+    if (nowF < r.close) return mk('closing', r.close - nowF);          // 凌晨仍在营业
+    if (nowF < r.open)  return mk('opening', r.open  - nowF);          // 白天等开门
+    return mk('closing', r.close + 1440 - nowF);                       // 夜里营业中
+  }
+  if (nowF < r.open)  return mk('opening', r.open  - nowF);
+  if (nowF < r.close) return mk('closing', r.close - nowF);
+  return null;
+}
+
+/* ── 倒计时横幅渲染（两个页面共用 #countdownBanner）──────────────────────── */
+function renderCountdown(cfg) {
+  const el = document.getElementById('countdownBanner');
+  if (!el) return;
+  /* 环境安全的小工具（预览/测试环境缺某些API也不炸）*/
+  const setVar  = (n, v) => { try { document.documentElement.style.setProperty(n, v); } catch(e) {} };
+  const bodyCls = on => { try { document.body.classList.toggle('cd-on', on); } catch(e) {} };
+  const cd = getCountdown(cfg);
+  if (!cd) {
+    el.style.display = 'none'; el.textContent = ''; el.className = 'countdown-banner';
+    bodyCls(false); setVar('--cd-h', '0px');          // 内容位移归零
+    return;
+  }
+  const tpl = cd.mode === 'opening'
+    ? (cfg.COUNTDOWN_OPENING || '⏰ Opening in {MIN} min')
+    : (cfg.COUNTDOWN_CLOSING || '⏰ Closing in {MIN} min');
+  el.textContent = tpl.replace(/\{MIN\}/g, cd.minutes);
+  el.className = 'countdown-banner show ' + (cd.mode === 'opening' ? 'cd-opening' : 'cd-closing');
+  /* 与导航同级：钉在导航实际下沿（导航高度可能随屏幕变化，动态测量）*/
+  const hdr = (document.querySelector && document.querySelector('.site-header')) || null;
+  el.style.top = ((hdr && hdr.offsetHeight) ? hdr.offsetHeight : 68) + 'px';
+  el.style.display = 'block';   // 必须显式block：置空会让CSS的display:none重新生效
+  setVar('--cd-h', (el.offsetHeight || 44) + 'px');   // 页面内容整体让出横幅高度
+  bodyCls(true);
+}
+
 /* ── 单个平台的指示灯状态 ──────────────────────────────────────────────────
    open   绿灯：营业中，正常下单
    future 黄灯：打烊时段，平台可下预订单（仅第三方平台）
@@ -295,18 +347,28 @@ function initNav() {
 
 /* ── 启动（仅在浏览器环境执行）───────────────────────────────────────────── */
 if (typeof window !== 'undefined' && typeof document !== 'undefined' && typeof fetch !== 'undefined') {
+function ready(fn) {
+  // 脚本可能在页面加载完成后才被注入（某些预览器如此）——
+  // readyState已过loading时直接执行，否则等DOMContentLoaded
+  if (document.readyState !== 'loading') fn();
+  else document.addEventListener('DOMContentLoaded', fn);
+}
+
   /* 配置提前开始加载，并暴露给 menu.js 复用（避免重复请求）*/
   window.CONFIG_READY = fetchText('data/site_config.txt')
     .then(parseConfig)
     .then(resolveConfig)
     .catch(e => { console.warn('配置加载失败：', e.message); return {}; });
 
-  document.addEventListener('DOMContentLoaded', async () => {
+  ready(async () => {
     initNav();
     const cfg = await window.CONFIG_READY;
     applyConfig(cfg);
     renderOrderPlatforms(cfg);   // 订餐平台按钮
     setInterval(() => renderOrderPlatforms(cfg), 60000);  // 每分钟刷新指示灯
+    window.__SITE_CFG__ = cfg;   // 暴露给演示/调试用
+    renderCountdown(cfg);        // 开门/打烊倒计时横幅
+    setInterval(() => renderCountdown(cfg), 15000);       // 每15秒刷新倒计时
     /* 浏览器标签页标题：根据 body 的 data-page 取对应配置 */
     const page = document.body?.dataset?.page;
     const key  = page === 'menu' ? 'PAGE_TITLE_MENU' : 'PAGE_TITLE_HOME';
@@ -322,5 +384,5 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined' && typeof f
 
 /* 供 Node 测试使用（浏览器中此段无副作用）*/
 if (typeof module !== 'undefined') {
-  module.exports = { parseConfig, resolveConfig, resolveStr, parsePopup, buildPopupHtml, popupKey, buildOrderButtons, buildStatusLegend, parseTimeRange, isRestaurantOpen, platformStatus, ORDER_PLATFORMS, parseAnnouncements, escapeHtml };
+  module.exports = { parseConfig, resolveConfig, resolveStr, parsePopup, buildPopupHtml, popupKey, buildOrderButtons, buildStatusLegend, parseTimeRange, isRestaurantOpen, platformStatus, getCountdown, ORDER_PLATFORMS, parseAnnouncements, escapeHtml };
 }

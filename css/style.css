@@ -32,7 +32,7 @@
 
 /* ── 基础重置 ─────────────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; scroll-padding-top: 84px; }
+html { scroll-behavior: smooth; scroll-padding-top: calc(84px + var(--cd-h, 0px)); }
 body {
   font-family: var(--font-body);
   color: var(--ink-900);
@@ -337,7 +337,7 @@ a:hover { color: var(--red-600); }
 
 /* 分类粘性导航 */
 .cat-nav {
-  position: sticky; top: 68px; z-index: 50;
+  position: sticky; top: calc(68px + var(--cd-h, 0px)); z-index: 50;
   background: rgba(255,253,249,.95); backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--line);
   overflow-x: auto; -webkit-overflow-scrolling: touch;
@@ -363,7 +363,7 @@ a:hover { color: var(--red-600); }
 
 /* 菜单主体 */
 .menu-wrap { max-width: var(--maxw); margin: 0 auto; padding: 40px 24px 90px; }
-.menu-category { margin-bottom: 54px; scroll-margin-top: 132px; }
+.menu-category { margin-bottom: 54px; scroll-margin-top: calc(132px + var(--cd-h, 0px)); }
 .mc-head { text-align: center; margin-bottom: 24px; }
 .mc-rule {
   height: 2px; max-width: 520px; margin: 0 auto 16px;
@@ -667,3 +667,27 @@ span.order-btn-primary.order-btn-disabled { color: var(--red-950); }
 }
 .legend-item { display: inline-flex; align-items: center; gap: 7px; }
 .order-status-legend-strip { flex-basis: 100%; margin-top: 6px; font-size: 11.5px; gap: 14px; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   开门/打烊倒计时横幅（COUNTDOWN_* 配置控制；平时隐藏）
+   ══════════════════════════════════════════════════════════════════════════ */
+.countdown-banner {
+  display: none;
+  /* 与导航栏同级：fixed钉在导航正下方，任何内容都盖不住（导航z=100，横幅z=95）*/
+  position: fixed; top: 68px; left: 0; right: 0; z-index: 95;
+  text-align: center; padding: 11px 20px;
+  font-size: 14.5px; font-weight: 800; letter-spacing: .02em;
+  box-shadow: 0 4px 14px rgba(59,10,10,.12);
+  animation: cdPulse 1.6s ease-in-out infinite alternate;
+}
+/* 横幅出现时页面内容整体下移相同高度（--cd-h由JS按实际横幅高度设置）*/
+body.cd-on { padding-top: var(--cd-h, 0px); }
+.countdown-banner.cd-closing {
+  background: linear-gradient(135deg, #FFF1CC, #FBE3A6);
+  color: var(--red-900); border-bottom: 2px solid #E8A400;
+}
+.countdown-banner.cd-opening {
+  background: linear-gradient(135deg, #E2F6E9, #CBEEDA);
+  color: #0E5F2D; border-bottom: 2px solid #1FA84D;
+}
+@keyframes cdPulse { from { filter: brightness(1); } to { filter: brightness(1.05); } }
