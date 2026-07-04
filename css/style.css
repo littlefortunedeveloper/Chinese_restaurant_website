@@ -686,6 +686,11 @@ body.cd-on { padding-top: var(--cd-h, 0px); }
   background: linear-gradient(135deg, #FFF1CC, #FBE3A6);
   color: var(--red-900); border-bottom: 2px solid #E8A400;
 }
+.countdown-banner.cd-closed {
+  background: linear-gradient(135deg, #F9E4E2, #F2CDC9);
+  color: #7A1F1A; border-bottom: 2px solid #C0392B;
+  animation: none;                       /* 常驻提示不需要呼吸动画 */
+}
 .countdown-banner.cd-opening {
   background: linear-gradient(135deg, #E2F6E9, #CBEEDA);
   color: #0E5F2D; border-bottom: 2px solid #1FA84D;

@@ -131,10 +131,23 @@ ORDER_EATSTREET_STATUS: ON
 
 # ── 开门/打烊倒计时横幅 ────────────────────────────────────
 # 距开门或打烊不足 N 分钟时，网站顶部显示倒计时（改成 0 = 关闭此功能）
-COUNTDOWN_MINUTES: 60
+COUNTDOWN_MINUTES: 30
 # {MIN} 会自动替换成剩余分钟数
 COUNTDOWN_OPENING: ⏰ Opening soon — {MIN} min · 即将开门，还有 {MIN} 分钟
 COUNTDOWN_CLOSING: ⏰ Closing soon — {MIN} min · 即将打烊，还有 {MIN} 分钟
+# 打烊期间常驻的顶部提示（留空=不显示；距开门≤N分钟时自动换成开门倒计时）
+COUNTDOWN_CLOSED: Restaurant is currently closed — please come back tomorrow · 本店现已打烊，欢迎明天光临
+
+# ── 打烊前截单时间（分钟）──────────────────────────────
+# 平台在打烊前 N 分钟停止接当日单 → 该按钮提前变黄灯◷（预订单仍可下）
+# 0 = 接单到打烊那一刻；官网直订不设截单（营业到几点接到几点）
+ORDER_DOORDASH_CUTOFF: 15
+ORDER_UBEREATS_CUTOFF: 30
+ORDER_GRUBHUB_CUTOFF: 30
+ORDER_MENUFY_CUTOFF: 30
+ORDER_EATSTREET_CUTOFF: 30
+# 截单窗口的悬停提示文字
+ORDER_STATUS_CUTOFF: Closing soon — order for later 临近打烊·可预订
 
 # 指示灯图例文字（显示在按钮下方）
 ORDER_STATUS_OPEN: Open 营业中

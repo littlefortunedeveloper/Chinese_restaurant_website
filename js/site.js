@@ -120,15 +120,24 @@ function parseTimeRange(str) {
   return { open: toMin(m[0][1], m[0][2], m[0][3]), close: toMin(m[1][1], m[1][2], m[1][3]) };
 }
 
-/* ── 现在餐厅是否营业中（读配置里今天的 HOURS_*，支持跨夜时段）─────────── */
-function isRestaurantOpen(cfg, now) {
+/* ── 营业剩余分钟数：营业中返回距打烊的分钟数，未营业返回 null（支持跨夜）── */
+function minutesToClose(cfg, now) {
   now = now || new Date();
   const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
   const r = parseTimeRange(cfg['HOURS_' + days[now.getDay()]]);
-  if (!r) return false;
-  const cur = now.getHours() * 60 + now.getMinutes();
-  if (r.close <= r.open) return cur >= r.open || cur < r.close;   // 跨夜（如营业到凌晨）
-  return cur >= r.open && cur < r.close;
+  if (!r) return null;
+  const cur = now.getHours()*60 + now.getMinutes() + now.getSeconds()/60;
+  if (r.close <= r.open) {                               // 跨夜（如营业到凌晨）
+    if (cur < r.close) return r.close - cur;
+    if (cur >= r.open) return r.close + 1440 - cur;
+    return null;
+  }
+  return (cur >= r.open && cur < r.close) ? r.close - cur : null;
+}
+
+/* ── 现在餐厅是否营业中 ─────────────────────────────────────────────────── */
+function isRestaurantOpen(cfg, now) {
+  return minutesToClose(cfg, now) !== null;
 }
 
 /* ── 开门/打烊倒计时 ────────────────────────────────────────────────────────
@@ -138,23 +147,30 @@ function isRestaurantOpen(cfg, now) {
    支持跨夜营业（如 5PM–1AM 的凌晨0:40 = 距打烊20分钟）*/
 function getCountdown(cfg, now) {
   const W = cfg.COUNTDOWN_MINUTES === undefined ? 30 : (parseFloat(cfg.COUNTDOWN_MINUTES) || 0);
-  if (W <= 0) return null;
   /* 演示钩子：window.__DEMO_NOW__ 存在时用它当"现在"（仅演示页用，正式站无影响）*/
   now = now || ((typeof window !== 'undefined' && window.__DEMO_NOW__)
                 ? new Date(window.__DEMO_NOW__) : new Date());
   const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
   const r = parseTimeRange(cfg['HOURS_' + days[now.getDay()]]);
-  if (!r) return null;
   const nowF = now.getHours()*60 + now.getMinutes() + now.getSeconds()/60;
-  const mk = (mode, diff) => (diff > 0 && diff <= W) ? { mode, minutes: Math.ceil(diff) } : null;
-  if (r.close <= r.open) {                        // 跨夜时段
-    if (nowF < r.close) return mk('closing', r.close - nowF);          // 凌晨仍在营业
-    if (nowF < r.open)  return mk('opening', r.open  - nowF);          // 白天等开门
-    return mk('closing', r.close + 1440 - nowF);                       // 夜里营业中
+  /* 先算出：现在营业吗？距开门/打烊各多少分钟 */
+  let open = false, toOpen = null, toClose = null;
+  if (r) {
+    if (r.close <= r.open) {                      // 跨夜时段
+      if      (nowF < r.close) { open = true;  toClose = r.close - nowF; }
+      else if (nowF < r.open)  { open = false; toOpen  = r.open  - nowF; }
+      else                     { open = true;  toClose = r.close + 1440 - nowF; }
+    } else {
+      if      (nowF < r.open)  { open = false; toOpen  = r.open  - nowF; }
+      else if (nowF < r.close) { open = true;  toClose = r.close - nowF; }
+      else                       open = false;    // 今日已打烊
+    }
   }
-  if (nowF < r.open)  return mk('opening', r.open  - nowF);
-  if (nowF < r.close) return mk('closing', r.close - nowF);
-  return null;
+  if (open)                                       // 营业中：仅临近打烊时倒计时
+    return (W > 0 && toClose <= W) ? { mode: 'closing', minutes: Math.ceil(toClose) } : null;
+  if (W > 0 && toOpen !== null && toOpen <= W)    // 打烊中但快开门：开门倒计时优先
+    return { mode: 'opening', minutes: Math.ceil(toOpen) };
+  return { mode: 'closed' };                      // 其余打烊时间：常驻打烊提示
 }
 
 /* ── 倒计时横幅渲染（两个页面共用 #countdownBanner）──────────────────────── */
@@ -165,16 +181,19 @@ function renderCountdown(cfg) {
   const setVar  = (n, v) => { try { document.documentElement.style.setProperty(n, v); } catch(e) {} };
   const bodyCls = on => { try { document.body.classList.toggle('cd-on', on); } catch(e) {} };
   const cd = getCountdown(cfg);
-  if (!cd) {
+  const closedTxt = cfg.COUNTDOWN_CLOSED !== undefined ? cfg.COUNTDOWN_CLOSED
+    : 'Restaurant is currently closed — please come back tomorrow · 本店现已打烊，欢迎明天光临';
+  const off = !cd || (cd.mode === 'closed' && !closedTxt.trim());   // 营业平段 / 打烊提示被留空关闭
+  if (off) {
     el.style.display = 'none'; el.textContent = ''; el.className = 'countdown-banner';
     bodyCls(false); setVar('--cd-h', '0px');          // 内容位移归零
     return;
   }
-  const tpl = cd.mode === 'opening'
-    ? (cfg.COUNTDOWN_OPENING || '⏰ Opening in {MIN} min')
-    : (cfg.COUNTDOWN_CLOSING || '⏰ Closing in {MIN} min');
-  el.textContent = tpl.replace(/\{MIN\}/g, cd.minutes);
-  el.className = 'countdown-banner show ' + (cd.mode === 'opening' ? 'cd-opening' : 'cd-closing');
+  const tpl = cd.mode === 'opening' ? (cfg.COUNTDOWN_OPENING || '⏰ Opening in {MIN} min')
+            : cd.mode === 'closing' ? (cfg.COUNTDOWN_CLOSING || '⏰ Closing in {MIN} min')
+            : closedTxt;
+  el.textContent = tpl.replace(/\{MIN\}/g, cd.minutes || '');
+  el.className = 'countdown-banner show cd-' + cd.mode;
   /* 与导航同级：钉在导航实际下沿（导航高度可能随屏幕变化，动态测量）*/
   const hdr = (document.querySelector && document.querySelector('.site-header')) || null;
   el.style.top = ((hdr && hdr.offsetHeight) ? hdr.offsetHeight : 68) + 'px';
@@ -184,32 +203,40 @@ function renderCountdown(cfg) {
 }
 
 /* ── 单个平台的指示灯状态 ──────────────────────────────────────────────────
-   open   绿灯：营业中，正常下单
+   open   绿灯：营业中且未到截单时间，正常下单
+   cutoff 黄灯：距打烊 ≤ 该平台CUTOFF分钟，当日单停收、预订单可下
    future 黄灯：打烊时段，平台可下预订单（仅第三方平台）
-   closed 红灯：店家手动OFF，或打烊时段的官网直订                          */
-function platformStatus(key, cfg, restaurantOpen) {
+   closed 红灯：店家手动OFF，或打烊时段的官网直订
+   参数 mins = 距打烊分钟数（未营业为 null）                              */
+function platformStatus(key, cfg, mins) {
   const raw = (cfg[key + '_STATUS'] || 'ON').trim();
   const on  = /^(ON|YES|TRUE|开|1)$/i.test(raw);
   if (!on) return 'closed';                                   // 店家手动关闭 → 红
-  if (restaurantOpen) return 'open';                          // 营业中 → 绿
-  return key === 'ORDER_ONLINE' ? 'closed' : 'future';       // 打烊：直订红/平台黄
+  if (mins === null)                                          // 打烊时段
+    return key === 'ORDER_ONLINE' ? 'closed' : 'future';
+  const cutoff = parseFloat(cfg[key + '_CUTOFF']) || 0;       // 打烊前N分钟截单
+  if (cutoff > 0 && mins <= cutoff)
+    return key === 'ORDER_ONLINE' ? 'closed' : 'cutoff';      // 截单窗口
+  return 'open';                                              // 正常营业 → 绿
 }
 
-function buildOrderButtons(cfg, restaurantOpen) {
-  if (restaurantOpen === undefined) restaurantOpen = isRestaurantOpen(cfg);
+function buildOrderButtons(cfg, minsOverride) {
+  const mins = (minsOverride !== undefined) ? minsOverride : minutesToClose(cfg);
   return ORDER_PLATFORMS
     .filter(([key]) => /^https?:\/\//i.test((cfg[key] || '').trim()))
     .map(([key, color, primary]) => {
       const url    = cfg[key].trim();
       const label  = cfg[key + '_LABEL'] || key.replace('ORDER_', '');
-      const status = platformStatus(key, cfg, restaurantOpen);
+      const status = platformStatus(key, cfg, mins);
       const sTitle = status === 'open'   ? (cfg.ORDER_STATUS_OPEN   || 'Open')
+                   : status === 'cutoff' ? (cfg.ORDER_STATUS_CUTOFF || cfg.ORDER_STATUS_FUTURE || 'Order for later')
                    : status === 'future' ? (cfg.ORDER_STATUS_FUTURE || 'Order for later')
                    :                       (cfg.ORDER_STATUS_CLOSED || 'Unavailable');
-      const icon   = status === 'open' ? '✓' : status === 'future' ? '◷' : '✕';
+      const badge  = status === 'cutoff' ? 'future' : status;   // 截单=黄灯视觉
+      const icon   = badge === 'open' ? '✓' : badge === 'future' ? '◷' : '✕';
       const inner  = `<span class="order-dot" style="background:${color}"></span>` +
                      `${escapeHtml(label)}` +
-                     `<span class="status-badge status-${status}">${icon}</span>`;
+                     `<span class="status-badge status-${badge}">${icon}</span>`;
       const cls    = `order-btn${primary ? ' order-btn-primary' : ''}`;
       if (status === 'closed') {                              // 红灯：不可点击
         return `<span class="${cls} order-btn-disabled" title="${escapeHtml(sTitle)}">${inner}</span>`;
@@ -384,5 +411,5 @@ function ready(fn) {
 
 /* 供 Node 测试使用（浏览器中此段无副作用）*/
 if (typeof module !== 'undefined') {
-  module.exports = { parseConfig, resolveConfig, resolveStr, parsePopup, buildPopupHtml, popupKey, buildOrderButtons, buildStatusLegend, parseTimeRange, isRestaurantOpen, platformStatus, getCountdown, ORDER_PLATFORMS, parseAnnouncements, escapeHtml };
+  module.exports = { parseConfig, resolveConfig, resolveStr, parsePopup, buildPopupHtml, popupKey, buildOrderButtons, buildStatusLegend, parseTimeRange, isRestaurantOpen, minutesToClose, platformStatus, getCountdown, ORDER_PLATFORMS, parseAnnouncements, escapeHtml };
 }
