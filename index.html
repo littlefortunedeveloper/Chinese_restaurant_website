@@ -136,7 +136,7 @@ l.href='https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&f
       <div class="section-kicker" data-config="INFO_KICKER">营业信息</div>
       <h2 class="section-title" data-config="INFO_TITLE">Hours &amp; Location</h2>
     </div>
-    <div class="info-grid">
+    <div id="hours" class="info-grid">
       <div class="info-card">
         <h3><span class="info-icon">🕐</span><span data-config="INFO_HOURS_TITLE">Hours 营业时间</span></h3>
         <table class="hours-table">
@@ -200,6 +200,8 @@ l.href='https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&f
       © <span id="year"></span> <span data-config="NAME">Restaurant</span>. <span data-config="FOOTER_RIGHTS">All rights reserved.</span>
     </div>
   </div>
+
+    <a class="footer-email" data-config="EMAIL" data-config-attr="href:EMAIL" data-hide-when-empty></a>
 </footer>
 
 <script>document.getElementById('year').textContent = new Date().getFullYear();</script>

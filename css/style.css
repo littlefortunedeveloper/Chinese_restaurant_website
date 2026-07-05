@@ -696,3 +696,11 @@ body.cd-on { padding-top: var(--cd-h, 0px); }
   color: #0E5F2D; border-bottom: 2px solid #1FA84D;
 }
 @keyframes cdPulse { from { filter: brightness(1); } to { filter: brightness(1.05); } }
+
+/* 打烊提示里的营业时间链接 */
+.countdown-banner .cd-link {
+  color: inherit; font-weight: 800;
+  text-decoration: underline; text-underline-offset: 3px;
+  white-space: nowrap;
+}
+.countdown-banner .cd-link:hover { opacity: .75; }

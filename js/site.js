@@ -15,12 +15,20 @@ async function fetchText(path) {
 }
 
 /* ── 解析 KEY: VALUE 配置格式 ─────────────────────────────────────────────── */
+/* 分隔符容错：中文输入法的全角"：""｜""％"一律接受 */
+function sepIdx(line) {
+  const a = line.indexOf(':'), b = line.indexOf('：');
+  if (a === -1) return b;
+  if (b === -1) return a;
+  return Math.min(a, b);
+}
+
 function parseConfig(text) {
   const cfg = {};
   for (const raw of text.split('\n')) {
     const line = raw.trim();
     if (!line || line.startsWith('#')) continue;        // 跳过空行和注释
-    const idx = line.indexOf(':');
+    const idx = sepIdx(line);
     if (idx === -1) continue;
     const key = line.slice(0, idx).trim();
     const val = line.slice(idx + 1).trim();
@@ -76,7 +84,7 @@ function parseAnnouncements(text) {
   for (const raw of text.split('\n')) {
     const line = raw.trim();
     if (!line || line.startsWith('#')) continue;
-    const parts = line.split('|').map(s => s.trim());
+    const parts = line.split(/[|｜]/).map(s => s.trim());
     if (parts.length < 3) continue;
     out.push({ date: parts[0], title: parts[1], text: parts.slice(2).join(' | ') });
   }
@@ -189,10 +197,18 @@ function renderCountdown(cfg) {
     bodyCls(false); setVar('--cd-h', '0px');          // 内容位移归零
     return;
   }
-  const tpl = cd.mode === 'opening' ? (cfg.COUNTDOWN_OPENING || '⏰ Opening in {MIN} min')
-            : cd.mode === 'closing' ? (cfg.COUNTDOWN_CLOSING || '⏰ Closing in {MIN} min')
-            : closedTxt;
-  el.textContent = tpl.replace(/\{MIN\}/g, cd.minutes || '');
+  if (cd.mode === 'closed') {
+    /* 打烊提示可带"查看营业时间"链接（LINK留空=纯文字）；全部转义防注入 */
+    const link = (cfg.COUNTDOWN_CLOSED_LINK || '').trim();
+    const linkTxt = cfg.COUNTDOWN_CLOSED_LINK_TEXT || 'Store Hours 营业时间';
+    el.innerHTML = escapeHtml(closedTxt) + (link
+      ? '&ensp;<a class="cd-link" href="' + escapeHtml(link) + '">' + escapeHtml(linkTxt) + '</a>'
+      : '');
+  } else {
+    const tpl = cd.mode === 'opening' ? (cfg.COUNTDOWN_OPENING || '⏰ Opening in {MIN} min')
+                                      : (cfg.COUNTDOWN_CLOSING || '⏰ Closing in {MIN} min');
+    el.textContent = tpl.replace(/\{MIN\}/g, cd.minutes || '');
+  }
   el.className = 'countdown-banner show cd-' + cd.mode;
   /* 与导航同级：钉在导航实际下沿（导航高度可能随屏幕变化，动态测量）*/
   const hdr = (document.querySelector && document.querySelector('.site-header')) || null;
@@ -283,7 +299,7 @@ function parsePopup(text) {
   for (const raw of text.split('\n')) {
     const line = raw.trim();
     if (!line || line.startsWith('#')) continue;          // 跳过注释和空行
-    const m = line.match(/^(ENABLED|TITLE|BUTTON|SHOW_ONCE)\s*:\s*(.*)$/i);
+    const m = line.match(/^(ENABLED|TITLE|BUTTON|SHOW_ONCE)\s*[:：]\s*(.*)$/i);
     if (m) {
       const key = m[1].toUpperCase(), val = m[2].trim();
       const on  = /^(ON|YES|TRUE|开|1)$/i.test(val);      // 接受 ON/YES/TRUE/开/1

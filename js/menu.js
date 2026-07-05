@@ -21,23 +21,25 @@ function parseMenuData(text) {
       continue;
     }
     const upper = line.toUpperCase();
-    if (upper.startsWith('SUBTITLE:')) {                             // 副标题
+    const upperN = upper.replace('：', ':');   // 关键字容全角冒号
+    if (upperN.startsWith('SUBTITLE:')) {                             // 副标题
       const sub = line.slice(9).trim();
       if (cur) cur.subtitle = sub.toUpperCase() === 'NONE' ? null : sub;
       continue;
     }
-    if (upper.startsWith('PRICE_ADJUST:')) {                         // 价格调整设置
-      const v = line.slice(13).trim();
+    if (upperN.startsWith('PRICE_ADJUST:')) {                         // 价格调整设置
+      const v = line.slice(13).trim().replace('％','%').replace('：',':');
       priceAdjust = (v && v !== '0') ? v : null;
       continue;
     }
-    if (line.includes('|') && cur) {                                 // 菜品行
-      const parts = line.split('|').map(s => s.trim());
+    if ((line.includes('|') || line.includes('｜')) && cur) {                                 // 菜品行
+      const parts = line.split(/[|｜]/).map(s => s.trim());
       if (parts.length < 4) continue;
       const [en, zh, es, priceStr] = parts;
       let price;
-      if (priceStr.startsWith('SM:') && priceStr.includes('/LG:')) { // 大小份
-        const seg = priceStr.split('/');
+      const priceN = priceStr.replace(/：/g, ':');
+      if (priceN.startsWith('SM:') && priceN.includes('/LG:')) { // 大小份
+        const seg = priceN.split('/');
         price = { sm: seg[0].replace('SM:', '').trim(),
                   lg: seg[1].replace('LG:', '').trim() };
       } else {
