@@ -131,7 +131,7 @@ ORDER_EATSTREET_STATUS: ON
 
 # ── 开门/打烊倒计时横幅 ────────────────────────────────────
 # 距开门或打烊不足 N 分钟时，网站顶部显示倒计时（改成 0 = 关闭此功能）
-COUNTDOWN_MINUTES: 45
+COUNTDOWN_MINUTES: 60
 # {MIN} 会自动替换成剩余分钟数
 COUNTDOWN_OPENING: ⏰ Opening soon — {MIN} min · 即将开门，还有 {MIN} 分钟
 COUNTDOWN_CLOSING: ⏰ Closing soon — {MIN} min · 即将打烊，还有 {MIN} 分钟
