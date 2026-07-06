@@ -122,7 +122,7 @@ ORDER_EATSTREET_LABEL: EatStreet
 # 某平台网站临时故障/暂停合作 → 把对应 STATUS 改成 OFF（按钮变灰+红灯，不可点击）
 # 恢复了改回 ON。营业时间内=绿灯；打烊时段：官网直订自动红灯，
 # 其他平台自动黄灯（顾客仍可下预订单，开门后配送）
-ORDER_ONLINE_STATUS: ON
+ORDER_ONLINE_STATUS: OFF
 ORDER_DOORDASH_STATUS: ON
 ORDER_UBEREATS_STATUS: ON
 ORDER_GRUBHUB_STATUS: ON
