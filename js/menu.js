@@ -91,13 +91,24 @@ function parseAvailability(str) {
    · window.__DEMO_MENU_NOW__ —— 只冻结菜单时段判断，不影响倒计时横幅等其它功能
    · window.__DEMO_NOW__      —— 全站演示时钟（site.js 原有钩子），设置时菜单跟随，保持全站时间一致
    边界规则：含开始时刻、不含结束时刻 —— "Until 3:30 PM" 在 3:29:59 显示、3:30:00 隐藏 */
+/* 时区锁定: 与 site.js 的 restaurantNow 同一套换算(两个脚本各自独立, 各持一份) */
+function tzNow(tz) {
+  const real = new Date();
+  tz = String(tz || '').trim();
+  if (!tz) return real;
+  try {
+    const shifted = new Date(real.toLocaleString('en-US', { timeZone: tz }));
+    return isNaN(shifted.getTime()) ? real : shifted;
+  } catch (e) { return real; }
+}
+
 function isAvailableNow(avail, now) {
   if (!avail) return true;
   if (!now && typeof window !== 'undefined') {
     if (window.__DEMO_MENU_NOW__)  now = new Date(window.__DEMO_MENU_NOW__);
     else if (window.__DEMO_NOW__)  now = new Date(window.__DEMO_NOW__);
   }
-  now = now || new Date();
+  now = now || tzNow(CFG && CFG.TIMEZONE);              // 配置了TIMEZONE→按餐馆时区
   const cur = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
   const { start, end } = avail;
   if (start === null) return cur < end;                 // 截止式：当天 end 之前
@@ -379,5 +390,5 @@ if (typeof document !== 'undefined') {
 
 /* 供 Node 测试使用 */
 if (typeof module !== 'undefined') {
-  module.exports = { parseMenuData, adjustPrice, applyAdjustToMenu, splitNum, parseAvailability, isAvailableNow };
+  module.exports = { parseMenuData, adjustPrice, applyAdjustToMenu, splitNum, parseAvailability, isAvailableNow, tzNow };
 }

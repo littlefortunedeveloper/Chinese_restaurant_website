@@ -28,6 +28,12 @@ ADDRESS_LINE2: Fond Du Lac, WI 54935
 MAP_LINK: https://maps.google.com/?q=18+N+Main+St+Fond+du+Lac
 
 # ══════════════════════ 营业时间 ══════════════════════
+# ── 时区锁定 ── 网站所有时间(横幅倒计时/订餐灯/进度环/午餐显隐/今日高亮)
+# 按此时区显示, 与访客在哪无关。填 IANA 时区名, 美国常用:
+#   America/New_York(东部) America/Chicago(中部) America/Denver(山区) America/Los_Angeles(西部)
+# 删掉本行或留空 = 按访客本地时间(旧行为)
+TIMEZONE: America/Chicago
+
 HOURS_MON: Closed 休息
 HOURS_TUE: 10:00 AM – 9:30 PM
 HOURS_WED: 10:00 AM – 9:30 PM

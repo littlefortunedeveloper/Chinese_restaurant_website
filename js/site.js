@@ -69,7 +69,7 @@ function applyConfig(cfg) {
   });
   // 高亮今天的营业时间行
   const dayRows = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
-  const today = dayRows[new Date().getDay()];
+  const today = dayRows[restaurantNow(cfg).getDay()];
   const row = document.querySelector(`[data-day="${today}"]`);
   if (row) row.classList.add('today');
   // 带 data-hide-when-empty 的元素：配置留空时整块自动隐藏
@@ -141,8 +141,24 @@ function parseTimeRange(str) {
 }
 
 /* ── 营业剩余分钟数：营业中返回距打烊的分钟数，未营业返回 null（支持跨夜）── */
-function minutesToClose(cfg, now) {
+/* ── 时区锁定 ────────────────────────────────────────────────────────────────
+   配置 TIMEZONE(IANA名, 如 America/New_York)后, 全站所有时间——横幅倒计时、
+   订餐状态灯、进度环、午餐显隐、"今日"高亮——按餐馆所在时区显示, 与访客在哪无关。
+   未配置/留空/名称无效 → 回退访客本地时间(即旧行为, 老部署零影响)。
+   实现: 把此刻换算成目标时区的墙上时间重新构造Date, 下游的 getDay/getHours
+   等逻辑一行不用改。now 可注入便于测试。 */
+function restaurantNow(cfg, now) {
   now = now || new Date();
+  const tz = String((cfg && cfg.TIMEZONE) || '').trim();
+  if (!tz) return now;
+  try {
+    const shifted = new Date(now.toLocaleString('en-US', { timeZone: tz }));
+    return isNaN(shifted.getTime()) ? now : shifted;   // 解析失败 → 回退
+  } catch (e) { return now; }                          // 无效时区名 → 回退
+}
+
+function minutesToClose(cfg, now) {
+  now = now || restaurantNow(cfg);
   const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
   const r = parseTimeRange(cfg['HOURS_' + days[now.getDay()]]);
   if (!r) return null;
@@ -169,7 +185,7 @@ function getCountdown(cfg, now) {
   const W = cfg.COUNTDOWN_MINUTES === undefined ? 30 : (parseFloat(cfg.COUNTDOWN_MINUTES) || 0);
   /* 演示钩子：window.__DEMO_NOW__ 存在时用它当"现在"（仅演示页用，正式站无影响）*/
   now = now || ((typeof window !== 'undefined' && window.__DEMO_NOW__)
-                ? new Date(window.__DEMO_NOW__) : new Date());
+                ? new Date(window.__DEMO_NOW__) : restaurantNow(cfg));
   const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
   const r = parseTimeRange(cfg['HOURS_' + days[now.getDay()]]);
   const nowF = now.getHours()*60 + now.getMinutes() + now.getSeconds()/60;
@@ -259,7 +275,7 @@ function platformStatus(key, cfg, mins) {
 function orderPhaseProgress(key, cfg, now) {
   if (/^(OFF|NO|FALSE|关|0)$/i.test(String(cfg.ORDER_PROGRESS_RING || '').trim())) return null;
   if (!/^(ON|YES|TRUE|开|1)$/i.test(String(cfg[key + '_STATUS'] || 'ON').trim())) return null;
-  now = now || new Date();
+  now = now || restaurantNow(cfg);
   const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
   const cutoff = parseFloat(cfg[key + '_CUTOFF']) || 0;
   /* 把前2天~后8天的营业时间展开成绝对时间区间（跨夜=收盘算到次日；休息日自然跳过）*/
@@ -544,5 +560,5 @@ function ready(fn) {
 
 /* 供 Node 测试使用（浏览器中此段无副作用）*/
 if (typeof module !== 'undefined') {
-  module.exports = { parseConfig, resolveConfig, resolveStr, parsePopup, buildPopupHtml, popupKey, buildOrderButtons, buildStatusLegend, parseTimeRange, isRestaurantOpen, minutesToClose, platformStatus, getCountdown, ORDER_PLATFORMS, parseAnnouncements, escapeHtml, orderPhaseProgress, fitOrderRings };
+  module.exports = { parseConfig, resolveConfig, resolveStr, parsePopup, buildPopupHtml, popupKey, buildOrderButtons, buildStatusLegend, parseTimeRange, isRestaurantOpen, minutesToClose, platformStatus, getCountdown, ORDER_PLATFORMS, parseAnnouncements, escapeHtml, orderPhaseProgress, fitOrderRings, restaurantNow };
 }
