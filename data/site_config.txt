@@ -60,6 +60,9 @@ NAV_HOURS: Hours & Location 营业信息
 # ══════════════════════ 首页 Hero 大图区 ══════════════════════
 HERO_BTN_MENU: View Our Menu 查看菜单
 HERO_BTN_CALL: ☎ Call to Order 电话订餐
+HERO_BTN_ORDER: 🛒 Order Online 在线订餐
+# 在线订餐按钮的去处: #order = 滚动到首页订餐平台区; 也可填完整网址(如你的Menufy链接)直达
+HERO_BTN_ORDER_LINK: #order
 
 # ══════════════════════ 首页「关于我们」══════════════════════
 ABOUT_KICKER: 关于我们

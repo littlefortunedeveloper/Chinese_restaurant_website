@@ -175,8 +175,8 @@ function renderMenu(menu) {
     const [enN, zhN, esN] = [segs[0] || '', segs[1] || '', segs[2] || ''];
     const items = cat.items.map(it => {
       const spicy = it.en.includes(SPICY_TAG);
-      const enClean = it.en.replaceAll(SPICY_TAG, '').trim();
-      const esClean = it.es.replaceAll(SPICY_TAG, '').trim();
+      const enClean = it.en.split(SPICY_TAG).join('').trim();   // 不用replaceAll: Safari 13.1前会抛错
+      const esClean = it.es.split(SPICY_TAG).join('').trim();
       const [num, name] = splitNum(enClean);
       const szS = esc(CFG.MENU_SIZE_SMALL || '小 sm');
       const szL = esc(CFG.MENU_SIZE_LARGE || '大 lg');
@@ -231,6 +231,8 @@ function renderMenu(menu) {
     scroller.scrollTo({ left: Math.max(0, left), behavior: 'smooth' });
   }
 
+  if (typeof IntersectionObserver !== 'undefined') {   // 老浏览器(≈iOS12前)无此API:
+                                                        // 仅失去chip自动高亮, 其余功能不受影响
   let activeIdx = -1;         // 记住当前分类，避免同一分类反复触发
   let raf = 0;                // 用 requestAnimationFrame 合并高频回调
   const io = new IntersectionObserver(entries => {
@@ -247,6 +249,7 @@ function renderMenu(menu) {
     }
   }, { rootMargin: '-30% 0px -60% 0px' });
   sections.forEach(s => io.observe(s));
+  }
 
   initAvailability(menu, sections, chips);   // 分类限时供应（渲染后立即生效，无闪烁）
 }

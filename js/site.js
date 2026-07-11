@@ -305,13 +305,14 @@ function orderPhaseProgress(key, cfg, now) {
   return { frac: clamp01((next[0] - now) / (next[0] - stop)) }; // 蓝灯：剩余=距下次开门
 }
 
-/* 环形SVG：沿整个按钮外轮廓走一圈（pathLength归一到100，进度按周长等比）。
-   几何尺寸由 fitOrderRings 渲染后实测填入；dasharray="进度 剩余" */
+/* 环形SVG：沿整个按钮外轮廓走一圈。故意不用 pathLength 归一——老Safari(≈16之前)
+   对 rect 不支持该属性会把环画错；改由 fitOrderRings 用真实周长算 dash，
+   dasharray/dashoffset 是 SVG 1.1 古老特性, 全浏览器兼容。进度值经按钮的
+   data-ring 属性传给贴合函数。 */
 function buildBtnRing(frac, badge) {
-  const p = Math.round(frac * 1000) / 10;
   return '<svg class="btn-ring ring-' + badge + '" aria-hidden="true">' +
-         '<rect class="btn-ring-track" pathLength="100"></rect>' +
-         '<rect class="btn-ring-fill" pathLength="100" stroke-dasharray="' + p + ' ' + (100 - p) + '"></rect></svg>';
+         '<rect class="btn-ring-track"></rect>' +
+         '<rect class="btn-ring-fill"></rect></svg>';
 }
 
 /* 按钮宽度随文字/换行变化 → 渲染后实测每个按钮的像素尺寸，把环的几何贴上去。
@@ -342,14 +343,19 @@ function fitOrderRings() {
       const inset = 1.25;                                      // = 描边宽/2 → 外缘齐平
       const rw = r2(w - inset * 2), rh = r2(h - inset * 2), r = r2(rh / 2);
       const straight = Math.max(0, rw - 2 * r);
-      const startShift = (straight / 2) / (2 * straight + 2 * Math.PI * r) * 100;
+      const P = r2(2 * straight + 2 * Math.PI * r);            // 真实周长
+      let frac = parseFloat(btn.getAttribute && btn.getAttribute('data-ring'));
+      if (!isFinite(frac) || frac < 0) frac = 0; if (frac > 1) frac = 1;
       svg.querySelectorAll('rect').forEach(rc => {
         rc.setAttribute('x', inset);  rc.setAttribute('y', inset);
         rc.setAttribute('width', rw); rc.setAttribute('height', rh);
         rc.setAttribute('rx', r);     rc.setAttribute('ry', r);
       });
       const fill = svg.querySelector('.btn-ring-fill');
-      if (fill) fill.setAttribute('stroke-dashoffset', (-startShift).toFixed(3));
+      if (fill) {
+        fill.setAttribute('stroke-dasharray', r2(frac * P) + ' ' + P);   // 剩余弧长(真实单位)
+        fill.setAttribute('stroke-dashoffset', (-r2(straight / 2)));     // 起点=顶部正中(=半条直边)
+      }
     });
   } catch (e) {}
 }
@@ -403,6 +409,9 @@ function renderOrderPlatforms(cfg) {
     box.innerHTML = html;
     const section = box.closest('[data-order-section]');
     if (section) section.style.display = html ? '' : 'none';  // 全空→隐藏整块
+  });
+  document.querySelectorAll('.order-cta').forEach(el => {     // 首页"在线订餐"按钮:
+    el.style.display = html ? '' : 'none';                    // 订餐区整块隐藏时同步隐藏, 避免死锚点
   });
   /* 官网直订的配送提示：仅当自家链接有效且NOTE非空时显示 */
   const ownOk = /^https?:\/\//i.test((cfg.ORDER_ONLINE || '').trim());
