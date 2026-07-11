@@ -265,13 +265,15 @@ function platformStatus(key, cfg, mins) {
 }
 
 /* ── 订餐按钮进度环 ──────────────────────────────────────────────────────────
-   语义：倒计时环，从100%满格走向0%空格。环走空 = 当前状态即将翻转。
-   · 绿灯阶段：开门时满格 → 该平台停止接单(打烊-CUTOFF分钟)时走空，空=停止接单
-   · "可预订"阶段(黄灯临近打烊/蓝灯打烊中本是同一段等待)：该平台截单时刻满格 →
-     下一次开门走空，跨打烊、跨休息日连续倒数，空=即将开门
-   · 红灯(不可用)与手动关闭(OFF)不带环；ORDER_PROGRESS_RING: OFF 可整体关闭
+   语义：一条全程连续、无跳变的曲线——
+   · 开门瞬间 = 100%(满格)；随后递减，各平台在自己的截单时刻(打烊-CUTOFF分钟)
+     恰好走到 0%，窗口长短不同所以递减速率不同(官网直订无截单→打烊整点才走空)
+   · 截单后到打烊：保持 0%(黄灯"临近打烊·可预订")；打烊时刻全部平台恒为 0%
+   · 打烊后(蓝灯可预订/红灯官网直订)：从 0% 匀速回充，下一次开门瞬间恰好 100%，
+     与绿灯首尾相接；跨周一休息日同样连续回充
+   · 手动关闭(OFF)不带环；ORDER_PROGRESS_RING: OFF 可整体关闭
    与订餐区其余逻辑一致走真实时钟；now 可注入便于测试。
-   返回 null=不画环；{frac: 剩余占比 1→0} */
+   返回 null=不画环；{frac: 0..1} */
 function orderPhaseProgress(key, cfg, now) {
   if (/^(OFF|NO|FALSE|关|0)$/i.test(String(cfg.ORDER_PROGRESS_RING || '').trim())) return null;
   if (!/^(ON|YES|TRUE|开|1)$/i.test(String(cfg[key + '_STATUS'] || 'ON').trim())) return null;
@@ -293,16 +295,14 @@ function orderPhaseProgress(key, cfg, now) {
   const cur = iv.find(p => now >= p[0] && now < p[1]);
   if (cur) {
     const stop = stopOf(cur);
-    if (now < stop)                                             // 绿灯：剩余=距截单
+    if (now < stop)                                             // 开门100% → 截单0%(各平台速率不同)
       return { frac: clamp01((stop - now) / (stop - cur[0])) };
-    const next = iv.find(p => p[0] > now);                      // 黄灯：剩余=距下次开门
-    return next ? { frac: clamp01((next[0] - now) / (next[0] - stop)) } : null;
+    return { frac: 0 };                                         // 截单后到打烊: 保持0%
   }
-  const prev = iv.slice().reverse().find(p => p[1] <= now);     // 蓝灯：上次截单→下次开门
-  const next = iv.find(p => p[0] > now);
+  const prev = iv.slice().reverse().find(p => p[1] <= now);     // 打烊后: 从打烊时刻0%起回充,
+  const next = iv.find(p => p[0] > now);                        // 下次开门瞬间恰好100%(无缝衔接绿灯)
   if (!prev || !next) return null;
-  const stop = stopOf(prev);
-  return { frac: clamp01((next[0] - now) / (next[0] - stop)) }; // 蓝灯：剩余=距下次开门
+  return { frac: clamp01((now - prev[1]) / (next[0] - prev[1])) };
 }
 
 /* 环形SVG：沿整个按钮外轮廓走一圈。故意不用 pathLength 归一——老Safari(≈16之前)
@@ -311,8 +311,8 @@ function orderPhaseProgress(key, cfg, now) {
    data-ring 属性传给贴合函数。 */
 function buildBtnRing(frac, badge) {
   return '<svg class="btn-ring ring-' + badge + '" aria-hidden="true">' +
-         '<rect class="btn-ring-track"></rect>' +
-         '<rect class="btn-ring-fill"></rect></svg>';
+         '<path class="btn-ring-track"></path>' +
+         '<path class="btn-ring-fill"></path></svg>';
 }
 
 /* 按钮宽度随文字/换行变化 → 渲染后实测每个按钮的像素尺寸，把环的几何贴上去。
@@ -346,15 +346,26 @@ function fitOrderRings() {
       const P = r2(2 * straight + 2 * Math.PI * r);            // 真实周长
       let frac = parseFloat(btn.getAttribute && btn.getAttribute('data-ring'));
       if (!isFinite(frac) || frac < 0) frac = 0; if (frac > 1) frac = 1;
-      svg.querySelectorAll('rect').forEach(rc => {
-        rc.setAttribute('x', inset);  rc.setAttribute('y', inset);
-        rc.setAttribute('width', rw); rc.setAttribute('height', rh);
-        rc.setAttribute('rx', r);     rc.setAttribute('ry', r);
-      });
+      /* 手工构造药丸路径, 起笔=顶部正中、顺时针一圈:
+         dash图案在闭合路径上不会绕圈衔接, 起点必须由路径本身决定
+         (此前用负dashoffset挪起点会在末尾留缺口——100%也无法闭合的根因) */
+      const y0 = inset, y1 = r2(inset + rh);
+      const xa = r2(inset + r), xb = r2(inset + rw - r), cx = r2(w / 2);
+      const d = 'M ' + cx + ' ' + y0 + ' L ' + xb + ' ' + y0 +
+                ' A ' + r + ' ' + r + ' 0 0 1 ' + xb + ' ' + y1 +
+                ' L ' + xa + ' ' + y1 +
+                ' A ' + r + ' ' + r + ' 0 0 1 ' + xa + ' ' + y0 + ' Z';
+      svg.querySelectorAll('path').forEach(p0 => p0.setAttribute('d', d));
       const fill = svg.querySelector('.btn-ring-fill');
       if (fill) {
-        fill.setAttribute('stroke-dasharray', r2(frac * P) + ' ' + P);   // 剩余弧长(真实单位)
-        fill.setAttribute('stroke-dashoffset', (-r2(straight / 2)));     // 起点=顶部正中(=半条直边)
+        if (frac >= 0.9995) {                                  // 满格: 直接实线, 绝对闭合
+          fill.removeAttribute('stroke-dasharray'); fill.style.display = '';
+        } else if (frac <= 0.0005) {                           // 空格: 隐藏(避免圆头帽画出小圆点)
+          fill.style.display = 'none';
+        } else {
+          fill.setAttribute('stroke-dasharray', r2(frac * P) + ' ' + P);
+          fill.style.display = '';
+        }
       }
     });
   } catch (e) {}
