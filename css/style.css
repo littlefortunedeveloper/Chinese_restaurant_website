@@ -725,3 +725,18 @@ body.cd-on { padding-top: var(--cd-h, 0px); }
 .btn-ring.ring-open   .btn-ring-fill { stroke: #1FA84D; }  /* = .status-open 徽章色 */
 .btn-ring.ring-future .btn-ring-fill { stroke: #E8A400; }  /* = .status-future 徽章色 */
 .btn-ring.ring-closed .btn-ring-fill { stroke: #D63333; }  /* = .status-closed 徽章色 */
+
+
+/* ── 歇业预告横幅（js/site.js renderNotice; 与倒计时横幅是两条独立横幅）────
+   倒计时横幅在上、预告在下, 由 layoutBanners 依次钉在导航下沿并共同让位。
+   琥珀金"公告"风格, 与红色打烊/绿色开门倒计时视觉明确区分 */
+.closure-notice {
+  display: none;
+  position: fixed; left: 0; right: 0; z-index: 94;   /* 倒计时z=95, 预告紧随其下 */
+  text-align: center; padding: 11px 20px;
+  font-size: 14.5px; font-weight: 800; letter-spacing: .02em;
+  background: linear-gradient(135deg, #FFF3D6, #F7E3AD);
+  color: #6B4E00; border-bottom: 2px solid #C9A227;
+  box-shadow: 0 4px 14px rgba(107, 78, 0, .14);
+}
+.closure-notice.nt-during { background: linear-gradient(135deg, #F7E3AD, #EFD07E); }

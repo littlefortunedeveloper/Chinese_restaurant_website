@@ -186,6 +186,8 @@ function getCountdown(cfg, now) {
   /* 演示钩子：window.__DEMO_NOW__ 存在时用它当"现在"（仅演示页用，正式站无影响）*/
   now = now || ((typeof window !== 'undefined' && window.__DEMO_NOW__)
                 ? new Date(window.__DEMO_NOW__) : restaurantNow(cfg));
+  if (closureInfo(cfg, now)) return null;                     // 歇业中: 倒计时横幅静默,
+                                                              // 消息由独立的预告横幅承载
   const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
   const r = parseTimeRange(cfg['HOURS_' + days[now.getDay()]]);
   const nowF = now.getHours()*60 + now.getMinutes() + now.getSeconds()/60;
@@ -213,16 +215,13 @@ function getCountdown(cfg, now) {
 function renderCountdown(cfg) {
   const el = document.getElementById('countdownBanner');
   if (!el) return;
-  /* 环境安全的小工具（预览/测试环境缺某些API也不炸）*/
-  const setVar  = (n, v) => { try { document.documentElement.style.setProperty(n, v); } catch(e) {} };
-  const bodyCls = on => { try { document.body.classList.toggle('cd-on', on); } catch(e) {} };
   const cd = getCountdown(cfg);
   const closedTxt = cfg.COUNTDOWN_CLOSED !== undefined ? cfg.COUNTDOWN_CLOSED
     : 'Restaurant is currently closed — please come back tomorrow · 本店现已打烊，欢迎明天光临';
   const off = !cd || (cd.mode === 'closed' && !closedTxt.trim());   // 营业平段 / 打烊提示被留空关闭
   if (off) {
     el.style.display = 'none'; el.textContent = ''; el.className = 'countdown-banner';
-    bodyCls(false); setVar('--cd-h', '0px');          // 内容位移归零
+    layoutBanners();                                  // 重排横幅堆叠, 内容位移归零
     return;
   }
   if (cd.mode === 'closed') {
@@ -238,12 +237,58 @@ function renderCountdown(cfg) {
     el.textContent = tpl.replace(/\{MIN\}/g, cd.minutes || '');
   }
   el.className = 'countdown-banner show cd-' + cd.mode;
-  /* 与导航同级：钉在导航实际下沿（导航高度可能随屏幕变化，动态测量）*/
-  const hdr = (document.querySelector && document.querySelector('.site-header')) || null;
-  el.style.top = ((hdr && hdr.offsetHeight) ? hdr.offsetHeight : 68) + 'px';
   el.style.display = 'block';   // 必须显式block：置空会让CSS的display:none重新生效
-  setVar('--cd-h', (el.offsetHeight || 44) + 'px');   // 页面内容整体让出横幅高度
-  bodyCls(true);
+  layoutBanners();              // 与预告横幅共同排位并让出高度
+}
+
+/* ── 歇业预告横幅(独立于倒计时横幅的第二条横幅) ─────────────────────────────
+   CLOSURE_ENABLED=ON 且填了日期时: 歇业开始前 CLOSURE_NOTICE_DAYS 天(默认14)起
+   显示"预告"(前缀可用 CLOSURE_NOTICE_PREFIX 定制); 歇业期间显示 CLOSURE 原文;
+   结束自动消失。与倒计时横幅是两个独立元素, 预告期内两条可同时叠放、互不混杂。 */
+function noticeInfo(cfg, now) {
+  const c = parseClosure(cfg, now);
+  if (!c) return null;
+  now = now || restaurantNow(cfg);
+  if (!c.start) return { phase: 'during', text: c.msg };            // 无限期: 立即进行中
+  if (now >= c.start && now < c.end) return { phase: 'during', text: c.msg };
+  const days = cfg.CLOSURE_NOTICE_DAYS === undefined ? 14 : (parseFloat(cfg.CLOSURE_NOTICE_DAYS) || 0);
+  if (days > 0 && now < c.start && now >= new Date(c.start.getTime() - days * 86400000)) {
+    const pre = cfg.CLOSURE_NOTICE_PREFIX !== undefined ? cfg.CLOSURE_NOTICE_PREFIX
+              : '📢 Advance Notice 提前通知 —';
+    return { phase: 'before', text: (String(pre).trim() ? String(pre).trim() + ' ' : '') + c.msg };
+  }
+  return null;                                                      // 太早/已结束
+}
+
+function renderNotice(cfg) {
+  const el = document.getElementById('closureNotice');
+  if (!el) return;
+  const n = noticeInfo(cfg);
+  if (!n) {
+    el.style.display = 'none'; el.textContent = ''; el.className = 'closure-notice';
+  } else {
+    el.textContent = n.text;                                        // textContent 注入, 天然防注入
+    el.className = 'closure-notice show nt-' + n.phase;
+    el.style.display = 'block';
+  }
+  layoutBanners();
+}
+
+/* 两条横幅共同排位: 倒计时在上、预告在下, 依次钉在导航下沿; 内容让位=两者高度和 */
+function layoutBanners() {
+  try {
+    const hdr = (document.querySelector && document.querySelector('.site-header')) || null;
+    let y = (hdr && hdr.offsetHeight) ? hdr.offsetHeight : 68, total = 0;
+    ['countdownBanner', 'closureNotice'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el || el.style.display !== 'block') return;
+      el.style.top = y + 'px';
+      const h = el.offsetHeight || 44;
+      y += h; total += h;
+    });
+    try { document.documentElement.style.setProperty('--cd-h', total + 'px'); } catch (e) {}
+    try { document.body.classList.toggle('cd-on', total > 0); } catch (e) {}
+  } catch (e) {}
 }
 
 /* ── 单个平台的指示灯状态 ──────────────────────────────────────────────────
@@ -252,10 +297,69 @@ function renderCountdown(cfg) {
    future 黄灯：打烊时段，平台可下预订单（仅第三方平台）
    closed 红灯：店家手动OFF，或打烊时段的官网直订
    参数 mins = 距打烊分钟数（未营业为 null）                              */
+/* ── 临时歇业/放假总闸(CLOSURE:) ─────────────────────────────────────────────
+   用法(site_config.txt) —— 双钥匙:
+   · CLOSURE_ENABLED: ON                         总开关。只有明确为 ON 时, 下面
+     CLOSURE 的日期/文字才会奏效; OFF/留空/删掉 = 一切照常(日期可常年留着当模板)
+   · CLOSURE:                                    留空 = 正常营业(开关开着也没内容可执行)
+   · CLOSURE: 2026-07-13 to 2026-07-19 春节休假   日期区间(含首尾两天): 到点自动
+     歇业、过期自动恢复。也认美式 7/13 - 7/19(不写年=按餐馆时区取今年, 跨年如
+     12/28 - 1/3 自动进位); 只写一个日期=只关那一天
+   · CLOSURE: ON 或任意不含日期的文字              立即无限期歇业(删空才恢复)
+   整行文字原样显示在顶部横幅(ON 用默认提示)。歇业期间: 官网直订红色不可点;
+   第三方平台保持蓝色"打烊中·可预订"仍可点(顾客可预订之后的单); 进度环从歇业前
+   最后一次打烊的0%起、用整段歇业时长匀速回充, 到歇业后第一次真实开门瞬间恰好
+   100%(与绿环无缝衔接)——关多久就充多久, 官网直订红环同样(无限期歇业无终点,
+   环保持0%)。"最后接单"提示隐藏; 菜单/公告/营业时间表照常可浏览。 */
+function parseClosure(cfg, now) {                    // 纯解析: null | {msg[, start, end]}
+  if (!/^(ON|YES|TRUE|开|1)$/i.test(String((cfg && cfg.CLOSURE_ENABLED) || '').trim()))
+    return null;                                     // 总开关未开 → 一切照常, 日期不奏效
+  const v = String((cfg && cfg.CLOSURE) || '').trim();
+  if (!v || /^(OFF|NO|FALSE|关|0)$/i.test(v)) return null;
+  const msg = /^(ON|YES|TRUE|开|1)$/i.test(v) ? 'Temporarily closed 暂停营业中' : v;
+  const ds = [];
+  const re = /(\d{4})-(\d{1,2})-(\d{1,2})|(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/g;
+  let m; while ((m = re.exec(v)) && ds.length < 2) {
+    if (m[1]) ds.push([+m[1], +m[2], +m[3]]);
+    else ds.push([m[6] ? (+m[6] < 100 ? 2000 + +m[6] : +m[6]) : null, +m[4], +m[5]]);
+  }
+  if (!ds.length) return { msg };                    // 不含日期 = 无限期歇业
+  now = now || restaurantNow(cfg);
+  ds.forEach(d => { if (d[0] === null) d[0] = now.getFullYear(); });   // 缺年份=今年
+  if (ds.length === 1) ds.push(ds[0].slice());       // 单日 = 首尾同一天
+  let start = new Date(ds[0][0], ds[0][1] - 1, ds[0][2]);
+  let end   = new Date(ds[1][0], ds[1][1] - 1, ds[1][2] + 1);          // 含末日 → 次日0点
+  if (end <= start) end = new Date(ds[1][0] + 1, ds[1][1] - 1, ds[1][2] + 1);  // 跨年进位
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) return { msg };  // 日期非法→无限期(防呆)
+  return { msg, start, end };
+}
+function closureInfo(cfg, now) {                     // 此刻是否歇业中(供横幅/状态灯/备注)
+  const c = parseClosure(cfg, now);
+  if (!c) return null;
+  if (!c.start) return c;                            // 无限期
+  now = now || restaurantNow(cfg);
+  return (now >= c.start && now < c.end) ? c : null; // 未到/已过 → 正常(到点自动启停)
+}
+/* 展开锚点日前后若干天的营业时间为绝对时间区间(跨夜=收盘算到次日; 休息日自然跳过) */
+function hoursIntervals(cfg, base, dFrom, dTo) {
+  const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  const iv = [];
+  for (let d = dFrom; d <= dTo; d++) {
+    const b = new Date(base.getFullYear(), base.getMonth(), base.getDate() + d);
+    const r = parseTimeRange(cfg['HOURS_' + days[b.getDay()]]);
+    if (!r) continue;
+    iv.push([ new Date(b.getFullYear(), b.getMonth(), b.getDate(), 0, r.open),
+              new Date(b.getFullYear(), b.getMonth(), b.getDate(), 0, r.close <= r.open ? r.close + 1440 : r.close) ]);
+  }
+  return iv;
+}
+
 function platformStatus(key, cfg, mins) {
   const raw = (cfg[key + '_STATUS'] || 'ON').trim();
   const on  = /^(ON|YES|TRUE|开|1)$/i.test(raw);
   if (!on) return 'closed';                                   // 店家手动关闭 → 红
+  if (closureInfo(cfg))                                       // 歇业: 直订红不可点, 第三方保持"可预订"
+    return key === 'ORDER_ONLINE' ? 'closed' : 'future';
   if (mins === null)                                          // 打烊时段
     return key === 'ORDER_ONLINE' ? 'closed' : 'future';
   const cutoff = parseFloat(cfg[key + '_CUTOFF']) || 0;       // 打烊前N分钟截单
@@ -278,19 +382,23 @@ function orderPhaseProgress(key, cfg, now) {
   if (/^(OFF|NO|FALSE|关|0)$/i.test(String(cfg.ORDER_PROGRESS_RING || '').trim())) return null;
   if (!/^(ON|YES|TRUE|开|1)$/i.test(String(cfg[key + '_STATUS'] || 'ON').trim())) return null;
   now = now || restaurantNow(cfg);
-  const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
-  const cutoff = parseFloat(cfg[key + '_CUTOFF']) || 0;
-  /* 把前2天~后8天的营业时间展开成绝对时间区间（跨夜=收盘算到次日；休息日自然跳过）*/
-  const iv = [];
-  for (let d = -2; d <= 8; d++) {
-    const b = new Date(now.getFullYear(), now.getMonth(), now.getDate() + d);
-    const r = parseTimeRange(cfg['HOURS_' + days[b.getDay()]]);
-    if (!r) continue;
-    iv.push([ new Date(b.getFullYear(), b.getMonth(), b.getDate(), 0, r.open),
-              new Date(b.getFullYear(), b.getMonth(), b.getDate(), 0, r.close <= r.open ? r.close + 1440 : r.close) ]);
-  }
-  if (!iv.length) return null;                                  // 整周无营业时间→不画
   const clamp01 = x => (isFinite(x) && x > 0) ? (x > 1 ? 1 : x) : 0;
+  /* 歇业环: 从歇业前最后一次打烊(0%)起, 用整段歇业时长匀速回充,
+     到歇业后第一次真实开门瞬间恰好100%(关多久充多久; 官网直订红环同样) */
+  const clP = parseClosure(cfg, now);
+  if (clP) {
+    if (!clP.start) return closureInfo(cfg, now) ? { frac: 0 } : null;  // 无限期: 归零
+    const before = hoursIntervals(cfg, clP.start, -4, 0).filter(p => p[1] <= clP.start);
+    const after  = hoursIntervals(cfg, clP.end, 0, 10).filter(p => p[0] >= clP.end);
+    const ws = before.length ? before[before.length - 1][1] : clP.start;
+    const we = after.length  ? after[0][0] : clP.end;
+    if (now >= ws && now < we)
+      return { frac: clamp01((now - ws) / (we - ws)) };
+    /* 窗口之外(未开始/已彻底恢复) → 按正常逻辑继续 */
+  }
+  const cutoff = parseFloat(cfg[key + '_CUTOFF']) || 0;
+  const iv = hoursIntervals(cfg, now, -2, 8);                   // 前2天~后8天的营业区间
+  if (!iv.length) return null;                                  // 整周无营业时间→不画
   const stopOf = pair => new Date(Math.max(pair[0].getTime(), pair[1].getTime() - cutoff * 60000));
   const cur = iv.find(p => now >= p[0] && now < p[1]);
   if (cur) {
@@ -428,7 +536,7 @@ function renderOrderPlatforms(cfg) {
   const ownOk = /^https?:\/\//i.test((cfg.ORDER_ONLINE || '').trim());
   const note  = (cfg.ORDER_ONLINE_NOTE || '').trim();
   document.querySelectorAll('.order-note').forEach(el => {
-    if (ownOk && note) { el.textContent = note; el.style.display = ''; }
+    if (ownOk && note && !closureInfo(cfg)) { el.textContent = note; el.style.display = ''; }
     else               { el.textContent = '';   el.style.display = 'none'; }
   });
   /* 进度环贴合实际按钮尺寸；窗口尺寸变化/网页字体加载完成会改变按钮宽度→重贴合 */
@@ -564,7 +672,9 @@ function ready(fn) {
     setInterval(() => renderOrderPlatforms(cfg), 60000);  // 每分钟刷新指示灯
     window.__SITE_CFG__ = cfg;   // 暴露给演示/调试用
     renderCountdown(cfg);        // 开门/打烊倒计时横幅
-    setInterval(() => renderCountdown(cfg), 15000);       // 每15秒刷新倒计时
+    renderNotice(cfg);           // 歇业预告横幅(独立的第二条)
+    setInterval(() => { renderCountdown(cfg); renderNotice(cfg); }, 15000);   // 每15秒刷新两条横幅
+    window.addEventListener('resize', layoutBanners);   // 视口变化立即重排堆叠, 双横幅永不互相遮挡
     /* 浏览器标签页标题：根据 body 的 data-page 取对应配置 */
     const page = document.body?.dataset?.page;
     const key  = page === 'menu' ? 'PAGE_TITLE_MENU' : 'PAGE_TITLE_HOME';
@@ -580,5 +690,5 @@ function ready(fn) {
 
 /* 供 Node 测试使用（浏览器中此段无副作用）*/
 if (typeof module !== 'undefined') {
-  module.exports = { parseConfig, resolveConfig, resolveStr, parsePopup, buildPopupHtml, popupKey, buildOrderButtons, buildStatusLegend, parseTimeRange, isRestaurantOpen, minutesToClose, platformStatus, getCountdown, ORDER_PLATFORMS, parseAnnouncements, escapeHtml, orderPhaseProgress, fitOrderRings, restaurantNow };
+  module.exports = { parseConfig, resolveConfig, resolveStr, parsePopup, buildPopupHtml, popupKey, buildOrderButtons, buildStatusLegend, parseTimeRange, isRestaurantOpen, minutesToClose, platformStatus, getCountdown, ORDER_PLATFORMS, parseAnnouncements, escapeHtml, orderPhaseProgress, fitOrderRings, restaurantNow, closureInfo, parseClosure, hoursIntervals, noticeInfo };
 }

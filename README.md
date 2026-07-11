@@ -1,4 +1,4 @@
-# 🐉 Chinese Restaurant Website Template · 中餐馆网站模板
+# 🐉 Chinese Restaurant Website Template · 中餐馆网站模板| 放假/临时歇业 | 在 site_config.txt 填日期区间：`CLOSURE: 2026-07-13 to 2026-07-19 春节休假`（含首尾两天，到点自动歇业、过期自动恢复；也认 `7/13 - 7/19`，单个日期=只关那天，`ON` 或纯文字=立即无限期歇业）。歇业期间横幅常驻这段文字，官网直订变红不可点，第三方保持蓝色"可预订"仍可点，进度环用整段歇业时长从0%匀速回充、重开门瞬间恰好100%；菜单照常可浏览 |
 
 A professional, graphic-rich restaurant website that runs 100% on **GitHub Pages** (free hosting).
 **Everything updates by editing simple .txt files — no coding needed.**
@@ -77,6 +77,7 @@ SUBTITLE: NONE
 | 分类限时供应（如午餐特价只卖到下午3:30） | 在该分类下加一行 `AVAILABLE: Until 3:30 PM`，网页过点自动隐藏整个分类、次日自动恢复；也可写时段 `AVAILABLE: 11:00 AM - 3:30 PM`。只影响网页，打印PDF不受影响。想立即测试效果：浏览器控制台输入 `window.__DEMO_MENU_NOW__ = '2026-07-10T16:00:00'`（专属钩子，只影响菜单时段判断，横幅/倒计时等一切照旧），最多30秒生效，刷新页面即恢复真实时间 |
 | 锁定餐馆时区（访客在哪都显示餐馆当地时间） | 在 site_config.txt 里把 `TIMEZONE: America/Chicago` 改成你的 IANA 时区名；横幅、订餐灯、进度环、午餐显隐、"今日"高亮全部跟随；删掉/留空则按访客本地时间 |
 | 首页"在线订餐"按钮 | 文字改 `HERO_BTN_ORDER`；点击去处改 `HERO_BTN_ORDER_LINK`（默认 `#order` 滚到本页订餐区，也可填某平台完整网址直达）；所有平台都关闭时按钮自动隐藏 |
+| 放假/临时歇业 | 双钥匙：`CLOSURE_ENABLED: ON` + `CLOSURE: 2026-07-13 to 2026-07-19 装修升级暂停营业 · CLOSED for Renovation · 7/21 恢复`。开始前 `CLOSURE_NOTICE_DAYS`（默认14）天起，顶部出现**独立的**琥珀色预告横幅（前缀 `CLOSURE_NOTICE_PREFIX` 可改），与红色打烊倒计时横幅分开、可同时叠放；歇业期间由预告横幅显示原文、倒计时横幅静默；官网直订变红不可点、第三方保持蓝色"可预订"、进度环按歇业时长从0%回充；过期自动恢复，开关 OFF 时日期不奏效 |
 | 全店涨价10% | 把文件顶部 `PRICE_ADJUST: 0` 改成 `PRICE_ADJUST: +10%` |
 | 全店每道菜涨$1 | 改成 `PRICE_ADJUST: +1.00` |
 
