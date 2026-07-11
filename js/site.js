@@ -248,6 +248,96 @@ function platformStatus(key, cfg, mins) {
   return 'open';                                              // 正常营业 → 绿
 }
 
+/* ── 订餐按钮进度环 ──────────────────────────────────────────────────────────
+   语义：倒计时环，从100%满格走向0%空格。环走空 = 当前状态即将翻转。
+   · 绿灯阶段：开门时满格 → 该平台停止接单(打烊-CUTOFF分钟)时走空，空=停止接单
+   · "可预订"阶段(黄灯临近打烊/蓝灯打烊中本是同一段等待)：该平台截单时刻满格 →
+     下一次开门走空，跨打烊、跨休息日连续倒数，空=即将开门
+   · 红灯(不可用)与手动关闭(OFF)不带环；ORDER_PROGRESS_RING: OFF 可整体关闭
+   与订餐区其余逻辑一致走真实时钟；now 可注入便于测试。
+   返回 null=不画环；{frac: 剩余占比 1→0} */
+function orderPhaseProgress(key, cfg, now) {
+  if (/^(OFF|NO|FALSE|关|0)$/i.test(String(cfg.ORDER_PROGRESS_RING || '').trim())) return null;
+  if (!/^(ON|YES|TRUE|开|1)$/i.test(String(cfg[key + '_STATUS'] || 'ON').trim())) return null;
+  now = now || new Date();
+  const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  const cutoff = parseFloat(cfg[key + '_CUTOFF']) || 0;
+  /* 把前2天~后8天的营业时间展开成绝对时间区间（跨夜=收盘算到次日；休息日自然跳过）*/
+  const iv = [];
+  for (let d = -2; d <= 8; d++) {
+    const b = new Date(now.getFullYear(), now.getMonth(), now.getDate() + d);
+    const r = parseTimeRange(cfg['HOURS_' + days[b.getDay()]]);
+    if (!r) continue;
+    iv.push([ new Date(b.getFullYear(), b.getMonth(), b.getDate(), 0, r.open),
+              new Date(b.getFullYear(), b.getMonth(), b.getDate(), 0, r.close <= r.open ? r.close + 1440 : r.close) ]);
+  }
+  if (!iv.length) return null;                                  // 整周无营业时间→不画
+  const clamp01 = x => (isFinite(x) && x > 0) ? (x > 1 ? 1 : x) : 0;
+  const stopOf = pair => new Date(Math.max(pair[0].getTime(), pair[1].getTime() - cutoff * 60000));
+  const cur = iv.find(p => now >= p[0] && now < p[1]);
+  if (cur) {
+    const stop = stopOf(cur);
+    if (now < stop)                                             // 绿灯：剩余=距截单
+      return { frac: clamp01((stop - now) / (stop - cur[0])) };
+    const next = iv.find(p => p[0] > now);                      // 黄灯：剩余=距下次开门
+    return next ? { frac: clamp01((next[0] - now) / (next[0] - stop)) } : null;
+  }
+  const prev = iv.slice().reverse().find(p => p[1] <= now);     // 蓝灯：上次截单→下次开门
+  const next = iv.find(p => p[0] > now);
+  if (!prev || !next) return null;
+  const stop = stopOf(prev);
+  return { frac: clamp01((next[0] - now) / (next[0] - stop)) }; // 蓝灯：剩余=距下次开门
+}
+
+/* 环形SVG：沿整个按钮外轮廓走一圈（pathLength归一到100，进度按周长等比）。
+   几何尺寸由 fitOrderRings 渲染后实测填入；dasharray="进度 剩余" */
+function buildBtnRing(frac, badge) {
+  const p = Math.round(frac * 1000) / 10;
+  return '<svg class="btn-ring ring-' + badge + '" aria-hidden="true">' +
+         '<rect class="btn-ring-track" pathLength="100"></rect>' +
+         '<rect class="btn-ring-fill" pathLength="100" stroke-dasharray="' + p + ' ' + (100 - p) + '"></rect></svg>';
+}
+
+/* 按钮宽度随文字/换行变化 → 渲染后实测每个按钮的像素尺寸，把环的几何贴上去。
+   贴合要点(像素级)：
+   · getBoundingClientRect 取小数像素(offsetWidth取整会差出亚像素错位)
+   · 绝对定位的参照是按钮的padding box(边框以内)，故SVG向外偏移边框宽度、
+     并显式设为边框盒尺寸 —— 环的坐标系与按钮外框严格重合
+   · 描边宽2.5、内缩1.25 → 描边外缘与按钮外缘齐平，圆角半径取平行曲线值
+   · dashoffset 负移使环从按钮顶部正中开始；倒计时走空时可见弧向顶部收拢
+   不可见(宽=0)时跳过，下轮渲染再试 */
+function fitOrderRings() {
+  try {
+    const r2 = x => Math.round(x * 100) / 100;
+    document.querySelectorAll('.order-btn[data-ring]').forEach(btn => {
+      const svg = btn.querySelector('.btn-ring');
+      if (!svg) return;
+      const box = btn.getBoundingClientRect();
+      const w = r2(box.width), h = r2(box.height);
+      if (!w || !h) return;
+      let bl = 1.5, bt = 1.5;                                  // 边框宽度(与CSS一致的后备值)
+      try {
+        const cs = (typeof getComputedStyle === 'function') ? getComputedStyle(btn) : null;
+        if (cs) { bl = parseFloat(cs.borderLeftWidth) || 0; bt = parseFloat(cs.borderTopWidth) || 0; }
+      } catch (e) {}
+      svg.style.left = -bl + 'px'; svg.style.top = -bt + 'px';
+      svg.style.width = w + 'px';  svg.style.height = h + 'px';
+      svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
+      const inset = 1.25;                                      // = 描边宽/2 → 外缘齐平
+      const rw = r2(w - inset * 2), rh = r2(h - inset * 2), r = r2(rh / 2);
+      const straight = Math.max(0, rw - 2 * r);
+      const startShift = (straight / 2) / (2 * straight + 2 * Math.PI * r) * 100;
+      svg.querySelectorAll('rect').forEach(rc => {
+        rc.setAttribute('x', inset);  rc.setAttribute('y', inset);
+        rc.setAttribute('width', rw); rc.setAttribute('height', rh);
+        rc.setAttribute('rx', r);     rc.setAttribute('ry', r);
+      });
+      const fill = svg.querySelector('.btn-ring-fill');
+      if (fill) fill.setAttribute('stroke-dashoffset', (-startShift).toFixed(3));
+    });
+  } catch (e) {}
+}
+
 function buildOrderButtons(cfg, minsOverride) {
   const mins = (minsOverride !== undefined) ? minsOverride : minutesToClose(cfg);
   return ORDER_PLATFORMS
@@ -256,6 +346,9 @@ function buildOrderButtons(cfg, minsOverride) {
       const url    = cfg[key].trim();
       const label  = cfg[key + '_LABEL'] || key.replace('ORDER_', '');
       const status = platformStatus(key, cfg, mins);
+      /* 进度环：仅生产路径(未传minsOverride)叠加；红灯(打烊中的官网直订)同样带环
+         倒数到开门；手动OFF的平台没有时间相位，orderPhaseProgress自会返回null */
+      const ring   = (minsOverride === undefined) ? orderPhaseProgress(key, cfg) : null;
       const sTitle = status === 'open'   ? (cfg.ORDER_STATUS_OPEN   || 'Open')
                    : status === 'cutoff' ? (cfg.ORDER_STATUS_CUTOFF || cfg.ORDER_STATUS_FUTURE || 'Order for later')
                    : status === 'future' ? (cfg.ORDER_STATUS_FUTURE || 'Order for later')
@@ -266,11 +359,13 @@ function buildOrderButtons(cfg, minsOverride) {
                      `${escapeHtml(label)}` +
                      `<span class="status-badge status-${badge}">${icon}</span>`;
       const cls    = `order-btn${primary ? ' order-btn-primary' : ''}`;
-      if (status === 'closed') {                              // 红灯：不可点击
-        return `<span class="${cls} order-btn-disabled" title="${escapeHtml(sTitle)}">${inner}</span>`;
+      if (status === 'closed') {                              // 红灯：不可点击(环照样倒数)
+        return `<span class="${cls} order-btn-disabled"${ring ? ` data-ring="${Math.round(ring.frac * 1000) / 1000}"` : ''}` +
+               ` title="${escapeHtml(sTitle)}">${inner}${ring ? buildBtnRing(ring.frac, badge) : ''}</span>`;
       }
-      return `<a class="${cls}" href="${escapeHtml(url)}" target="_blank" rel="noopener"` +
-             ` title="${escapeHtml(sTitle)}">${inner}</a>`;
+      /* 进度环沿按钮外轮廓：仅加 data-ring 属性 + 一个SVG子元素，其余标记与原版一致 */
+      return `<a class="${cls}"${ring ? ` data-ring="${Math.round(ring.frac * 1000) / 1000}"` : ''} href="${escapeHtml(url)}" target="_blank" rel="noopener"` +
+             ` title="${escapeHtml(sTitle)}">${inner}${ring ? buildBtnRing(ring.frac, badge) : ''}</a>`;
     }).join('');
 }
 
@@ -300,6 +395,16 @@ function renderOrderPlatforms(cfg) {
     if (ownOk && note) { el.textContent = note; el.style.display = ''; }
     else               { el.textContent = '';   el.style.display = 'none'; }
   });
+  /* 进度环贴合实际按钮尺寸；窗口尺寸变化/网页字体加载完成会改变按钮宽度→重贴合 */
+  fitOrderRings();
+  if (typeof window !== 'undefined' && !window.__ringFitWired) {
+    window.__ringFitWired = true;
+    window.addEventListener('resize', () => {
+      clearTimeout(window.__ringFitT);
+      window.__ringFitT = setTimeout(fitOrderRings, 150);
+    });
+    try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitOrderRings); } catch (e) {}
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -439,5 +544,5 @@ function ready(fn) {
 
 /* 供 Node 测试使用（浏览器中此段无副作用）*/
 if (typeof module !== 'undefined') {
-  module.exports = { parseConfig, resolveConfig, resolveStr, parsePopup, buildPopupHtml, popupKey, buildOrderButtons, buildStatusLegend, parseTimeRange, isRestaurantOpen, minutesToClose, platformStatus, getCountdown, ORDER_PLATFORMS, parseAnnouncements, escapeHtml };
+  module.exports = { parseConfig, resolveConfig, resolveStr, parsePopup, buildPopupHtml, popupKey, buildOrderButtons, buildStatusLegend, parseTimeRange, isRestaurantOpen, minutesToClose, platformStatus, getCountdown, ORDER_PLATFORMS, parseAnnouncements, escapeHtml, orderPhaseProgress, fitOrderRings };
 }

@@ -87,12 +87,17 @@ function parseAvailability(str) {
 }
 
 /* ── 分类此刻是否在供应时段内（avail=null 表示全天供应）──────────────────────
-   now 参数可注入，便于测试；浏览器里同 site.js 一样支持 window.__DEMO_NOW__ 演示钩子。
+   now 参数可注入，便于测试。浏览器演示钩子（仅本地测试用，正式站无影响）：
+   · window.__DEMO_MENU_NOW__ —— 只冻结菜单时段判断，不影响倒计时横幅等其它功能
+   · window.__DEMO_NOW__      —— 全站演示时钟（site.js 原有钩子），设置时菜单跟随，保持全站时间一致
    边界规则：含开始时刻、不含结束时刻 —— "Until 3:30 PM" 在 3:29:59 显示、3:30:00 隐藏 */
 function isAvailableNow(avail, now) {
   if (!avail) return true;
-  now = now || ((typeof window !== 'undefined' && window.__DEMO_NOW__)
-                ? new Date(window.__DEMO_NOW__) : new Date());
+  if (!now && typeof window !== 'undefined') {
+    if (window.__DEMO_MENU_NOW__)  now = new Date(window.__DEMO_MENU_NOW__);
+    else if (window.__DEMO_NOW__)  now = new Date(window.__DEMO_NOW__);
+  }
+  now = now || new Date();
   const cur = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
   const { start, end } = avail;
   if (start === null) return cur < end;                 // 截止式：当天 end 之前

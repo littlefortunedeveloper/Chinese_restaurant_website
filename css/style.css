@@ -709,3 +709,19 @@ body.cd-on { padding-top: var(--cd-h, 0px); }
    不在供应时段的分类：区块和顶部chip一并隐藏，由 js/menu.js 按时间自动加/去此类。
    用 !important 确保优先于搜索逻辑写入的 inline display，二者互不干扰 */
 .cat-unavailable { display: none !important; }
+
+/* ── 订餐按钮进度环（js/site.js orderPhaseProgress + fitOrderRings）─────────
+   环沿整个白色药丸按钮的外轮廓走一圈：SVG绝对定位铺满按钮，几何尺寸由JS实测
+   贴合(按钮宽度随文字变化)；pathLength归一→进度按周长严格等比；描边盖在原
+   1.5px边框线上，零布局位移。充满=状态即将翻转(绿:即将截单 / 黄:即将开门) */
+.order-btn[data-ring] { position: relative; }
+.btn-ring {
+  position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+  pointer-events: none; overflow: visible;               /* 精确偏移/尺寸由JS按边框盒填入 */
+}
+.btn-ring rect { fill: none; stroke-width: 2.5; }
+.btn-ring .btn-ring-track { stroke: var(--line); }       /* 轨道=边框色, 未走完部分即普通边框 */
+.btn-ring .btn-ring-fill  { stroke-linecap: round; transition: stroke-dasharray .6s ease; }
+.btn-ring.ring-open   .btn-ring-fill { stroke: #1FA84D; }  /* = .status-open 徽章色 */
+.btn-ring.ring-future .btn-ring-fill { stroke: #E8A400; }  /* = .status-future 徽章色 */
+.btn-ring.ring-closed .btn-ring-fill { stroke: #D63333; }  /* = .status-closed 徽章色 */
