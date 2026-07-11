@@ -2,6 +2,7 @@
    menu.js — 菜单页脚本
    读取 data/menu_data.txt（与 PDF 生成器完全相同的格式！）并渲染成网页菜单
    支持：分类 === ··· === · SUBTITLE · [SPICY] 辣标识 · SM:/LG: 大小份 · PRICE_ADJUST 价格调整
+        · AVAILABLE 分类限时供应（如午餐特价只显示到下午3:30，到点自动隐藏）
    改 txt → push 到 GitHub → 菜单自动更新
    ============================================================================== */
 
@@ -17,7 +18,7 @@ function parseMenuData(text) {
 
     if (line.startsWith('===') && line.endsWith('===')) {            // 分类行
       if (cur && cur.items.length) menu.push(cur);
-      cur = { name: line.replace(/^=+|=+$/g, '').trim(), subtitle: null, items: [] };
+      cur = { name: line.replace(/^=+|=+$/g, '').trim(), subtitle: null, available: null, items: [] };
       continue;
     }
     const upper = line.toUpperCase();
@@ -25,6 +26,11 @@ function parseMenuData(text) {
     if (upperN.startsWith('SUBTITLE:')) {                             // 副标题
       const sub = line.slice(9).trim();
       if (cur) cur.subtitle = sub.toUpperCase() === 'NONE' ? null : sub;
+      continue;
+    }
+    if (upperN.startsWith('AVAILABLE:')) {                            // 分类供应时段（仅网页限时显示）
+      const v = line.slice(10).trim();
+      if (cur) cur.available = parseAvailability(v);
       continue;
     }
     if (upperN.startsWith('PRICE_ADJUST:')) {                         // 价格调整设置
@@ -50,6 +56,49 @@ function parseMenuData(text) {
   }
   if (cur && cur.items.length) menu.push(cur);
   return { menu, priceAdjust };
+}
+
+/* ── 解析分类供应时段 AVAILABLE: ─────────────────────────────────────────────
+   写法A（截止式）：AVAILABLE: Until 3:30 PM        → 当天下午3:30之前显示，过点隐藏
+   写法B（时段式）：AVAILABLE: 11:00 AM - 3:30 PM   → 只在该时段内显示（支持跨夜，
+                                                      如深夜档 9:00 PM - 1:00 AM）
+   容错规则：
+   · 从整行文字里提取时间，其余中英文说明一律忽略（可写成双语句子）
+   · 时间需带 AM/PM（与营业时间配置同格式）；全角冒号"："也接受
+   · 重复出现的相同时间自动去重（双语写两遍同一时间也能正确识别为截止式）
+   · 一个时间=截止式；两个不同时间=时段式（取前两个）
+   · "Until 12:00 AM" 视为到半夜=全天显示
+   · 解析不出任何时间 → 按全天显示并在控制台提示（宁可多显示，绝不误藏菜单）*/
+function parseAvailability(str) {
+  const toMin = (h, m, ap) => (parseInt(h) % 12 + (/pm/i.test(ap) ? 12 : 0)) * 60 + parseInt(m);
+  const seen = new Set(), times = [];
+  for (const m of String(str).matchAll(/(\d{1,2})[:：](\d{2})\s*(AM|PM)/gi)) {
+    const v = toMin(m[1], m[2], m[3]);
+    if (!seen.has(v)) { seen.add(v); times.push(v); }
+  }
+  if (times.length === 0) {
+    try { console.warn('[menu] AVAILABLE 未能解析出时间（需含 AM/PM），该分类按全天显示：' + str); } catch (e) {}
+    return null;                                        // 防呆：解析失败=全天显示
+  }
+  if (times.length === 1) {
+    return { start: null, end: times[0] === 0 ? 1440 : times[0] };  // 截止式
+  }
+  return { start: times[0], end: times[1] };            // 时段式
+}
+
+/* ── 分类此刻是否在供应时段内（avail=null 表示全天供应）──────────────────────
+   now 参数可注入，便于测试；浏览器里同 site.js 一样支持 window.__DEMO_NOW__ 演示钩子。
+   边界规则：含开始时刻、不含结束时刻 —— "Until 3:30 PM" 在 3:29:59 显示、3:30:00 隐藏 */
+function isAvailableNow(avail, now) {
+  if (!avail) return true;
+  now = now || ((typeof window !== 'undefined' && window.__DEMO_NOW__)
+                ? new Date(window.__DEMO_NOW__) : new Date());
+  const cur = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
+  const { start, end } = avail;
+  if (start === null) return cur < end;                 // 截止式：当天 end 之前
+  if (start < end)    return cur >= start && cur < end; // 常规时段
+  if (start > end)    return cur >= start || cur < end; // 跨夜时段
+  return true;                                          // start==end 理论上不出现，防呆全天显示
 }
 
 /* ── 价格调整（与 Python 版一致：标准四舍五入到 $0.01）─────────────────────── */
@@ -81,6 +130,7 @@ function applyAdjustToMenu(menu, adj) {
 /* ── 单个菜品的小工具 ─────────────────────────────────────────────────────── */
 const SPICY_TAG = '[SPICY]';
 let CFG = {};   // 网站文字配置（由 initMenu 从 site_config.txt 载入）
+let refreshFilter = null;   // 搜索/筛选的刷新函数（initSearch 赋值；供应时段变化时调用以重算结果）
 function splitNum(en) {
   // 提取编号："16. Hot & Sour Soup" → ["16.", "Hot & Sour Soup"]（与 Python 正则一致）
   const m = en.match(/^([A-Z]?\d+[a-z]?\.)\s+(.*)$/);
@@ -181,6 +231,43 @@ function renderMenu(menu) {
     }
   }, { rootMargin: '-30% 0px -60% 0px' });
   sections.forEach(s => io.observe(s));
+
+  initAvailability(menu, sections, chips);   // 分类限时供应（渲染后立即生效，无闪烁）
+}
+
+/* ── 分类限时供应：到点自动隐藏、次日自动恢复（如午餐特价只卖到下午3:30）─────
+   实现要点（每一条都是为了避免联动 bug）：
+   · 菜单始终只渲染一次，用 .cat-unavailable 类控制显隐
+     —— 不重渲染，搜索关键词/辣度筛选/滚动位置全都不会丢
+   · 分类区块和顶部分类 chip 同步显隐，不会出现"点了 chip 却滚到空处"
+   · 显隐用 class 而非 inline style，与搜索逻辑（inline style）互不覆盖
+   · 状态变化时若搜索/筛选生效中，自动重算——隐藏分类不计入"找到N道菜"
+   · 每30秒复查一次；切回标签页/从往返缓存恢复时立即复查
+     （手机浏览器会冻结后台定时器，只靠 setInterval 会出现回到页面还显示午餐的 bug）*/
+function initAvailability(menu, sections, chips) {
+  if (!menu.some(cat => cat.available)) return;         // 无任何限时分类 → 零开销直接退出
+
+  function update() {
+    let changed = false;
+    menu.forEach((cat, i) => {
+      const sec = sections[i];
+      if (!sec) return;                                 // 防呆：数组错位时不炸
+      const hide = !isAvailableNow(cat.available);
+      if (sec.classList.contains('cat-unavailable') !== hide) {
+        sec.classList.toggle('cat-unavailable', hide);
+        if (chips[i]) chips[i].classList.toggle('cat-unavailable', hide);
+        changed = true;
+      }
+    });
+    if (changed && typeof refreshFilter === 'function') refreshFilter();
+  }
+
+  update();                                             // 首屏立即按当前时间显隐
+  setInterval(update, 30000);                           // 常驻复查：过点后最多30秒内消失
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') update();
+  });
+  window.addEventListener('pageshow', update);          // bfcache 恢复时立即复查
 }
 
 /* ── 菜单搜索 + 辣度筛选（联合过滤）──────────────────────────────────────── */
@@ -216,6 +303,7 @@ function initSearch() {
     if (catNav)   catNav.style.display   = 'none';    // 筛选中隐藏分类导航
     let total = 0;
     sections.forEach(sec => {
+      if (sec.classList.contains('cat-unavailable')) return;  // 不在供应时段的分类：不参与筛选与计数
       let n = 0;
       sec.querySelectorAll('.menu-item').forEach(item => {
         const okText  = !q || (item.dataset.search || '').includes(q);
@@ -253,6 +341,7 @@ function initSearch() {
       });
     });
   }
+  refreshFilter = apply;   // 暴露给供应时段逻辑：分类显隐变化时重算筛选结果/计数
 }
 
 /* ── 启动 ─────────────────────────────────────────────────────────────────── */
@@ -285,5 +374,5 @@ if (typeof document !== 'undefined') {
 
 /* 供 Node 测试使用 */
 if (typeof module !== 'undefined') {
-  module.exports = { parseMenuData, adjustPrice, applyAdjustToMenu, splitNum };
+  module.exports = { parseMenuData, adjustPrice, applyAdjustToMenu, splitNum, parseAvailability, isAvailableNow };
 }

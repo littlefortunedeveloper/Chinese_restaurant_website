@@ -704,3 +704,8 @@ body.cd-on { padding-top: var(--cd-h, 0px); }
   white-space: nowrap;
 }
 .countdown-banner .cd-link:hover { opacity: .75; }
+
+/* ── 分类限时供应（menu_data.txt 的 AVAILABLE: 指令）─────────────────────────
+   不在供应时段的分类：区块和顶部chip一并隐藏，由 js/menu.js 按时间自动加/去此类。
+   用 !important 确保优先于搜索逻辑写入的 inline display，二者互不干扰 */
+.cat-unavailable { display: none !important; }

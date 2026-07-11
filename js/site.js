@@ -125,7 +125,19 @@ function parseTimeRange(str) {
   const m = [...String(str).matchAll(/(\d{1,2}):(\d{2})\s*(AM|PM)/gi)];
   if (m.length < 2) return null;
   const toMin = (h, mm, ap) => (parseInt(h) % 12 + (/pm/i.test(ap) ? 12 : 0)) * 60 + parseInt(mm);
-  return { open: toMin(m[0][1], m[0][2], m[0][3]), close: toMin(m[1][1], m[1][2], m[1][3]) };
+  let apO = m[0][3], apC = m[1][3];
+  let open  = toMin(m[0][1], m[0][2], apO);
+  let close = toMin(m[1][1], m[1][2], apC);
+  /* 防呆：开门>打烊 且 两边同为AM或同为PM —— 这不是通宵店（通宵是PM–AM），
+     而是上下午打错（如 "10:00 PM – 9:00 PM" 实为 10:00 AM 开门）。
+     按用户本意自动纠正：PM–PM颠倒→开门改AM；AM–AM颠倒→打烊改PM。
+     真通宵（PM–AM）不受任何影响。*/
+  if (open >= close && /pm/i.test(apO) === /pm/i.test(apC)) {
+    if (/pm/i.test(apO)) open -= 720;   // PM–PM → 开门按AM算
+    else                 close += 720;  // AM–AM → 打烊按PM算
+    try { console.warn('[hours] 疑似上下午打错，已按 ' + str + ' 的合理日间时段解读'); } catch(e) {}
+  }
+  return { open, close };
 }
 
 /* ── 营业剩余分钟数：营业中返回距打烊的分钟数，未营业返回 null（支持跨夜）── */

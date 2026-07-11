@@ -21,6 +21,9 @@ PRICE_ADJUST: 0
 # 格式说明：
 #   分类标题：=== 英文 / 中文 / 西班牙文 ===
 #   副标题：  SUBTITLE: 文字内容（不需要副标题则写 SUBTITLE: NONE）
+#   限时供应：AVAILABLE: Until 3:30 PM        → 网页上该分类只在下午3:30前显示，过点自动隐藏、次日自动恢复
+#             AVAILABLE: 11:00 AM - 3:30 PM  → 也可写完整时段（深夜档跨夜如 9:00 PM - 1:00 AM 同样支持）
+#             时间需带 AM/PM；删掉该行 = 全天显示；只影响网页，打印PDF菜单不受影响
 #   菜品行：  英文菜名 | 中文名 | 西班牙文名 | 价格
 #   单一价格：12.95
 #   大小份价：SM:4.75/LG:7.25
@@ -285,6 +288,7 @@ Chicken Wings | 鸡翅 | Alitas de Pollo | 10.95
 
 === Lunch Special / 午餐特价 / Especial del Almuerzo ===
 SUBTITLE: $9.35 per order / 每份$9.35 / $9.35 por orden  ·  Served 11:00am - 3:30pm / 供应时间11:00am-3:30pm  ·  w. Pork Fried Rice & Mini Pork Egg Roll  ·  含炒饭和迷你春卷  ·  con Arroz Frito y Mini Rollo de Cerdo
+AVAILABLE: Until 3:30 PM
 
 L1.  Chicken w. Snow Peas | 雪豆鸡 | Pollo con Guisantes Nieve | 9.35
 L2.  Roast Pork w. Snow Peas | 雪豆叉烧 | Cerdo Asado con Guisantes Nieve | 9.35
