@@ -479,35 +479,104 @@ function fitOrderRings() {
   } catch (e) {}
 }
 
+/* 单个订餐按钮的标记生成(平台/电话共用)。平台路径输出与历史版本逐字节一致,
+   由剥环A/B回归守护; opt 仅供电话按钮定制: {url,label,status,tel,phaseKey} */
+function buildOrderBtn(cfg, mins, minsOverride, key, color, primary, opt) {
+  opt = opt || {};
+  const url    = (opt.url !== undefined) ? opt.url : cfg[key].trim();
+  const label  = (opt.label !== undefined) ? opt.label : (cfg[key + '_LABEL'] || key.replace('ORDER_', ''));
+  const status = (opt.status !== undefined) ? opt.status : platformStatus(key, cfg, mins);
+  /* 进度环：仅生产路径(未传minsOverride)叠加；红灯(打烊中的自家渠道)同样带环
+     倒数到开门；手动OFF的平台没有时间相位，orderPhaseProgress自会返回null */
+  const ring   = (minsOverride === undefined) ? orderPhaseProgress(opt.phaseKey || key, cfg) : null;
+  const sTitle = status === 'open'   ? (cfg.ORDER_STATUS_OPEN   || 'Open')
+               : status === 'cutoff' ? (cfg.ORDER_STATUS_CUTOFF || cfg.ORDER_STATUS_FUTURE || 'Order for later')
+               : status === 'future' ? (cfg.ORDER_STATUS_FUTURE || 'Order for later')
+               :                       (cfg.ORDER_STATUS_CLOSED || 'Unavailable');
+  const badge  = status === 'cutoff' ? 'future' : status;   // 截单=黄灯视觉
+  const icon   = badge === 'open' ? '✓' : badge === 'future' ? '◷' : '✕';
+  const inner  = `<span class="order-dot" style="background:${color}"></span>` +
+                 `${escapeHtml(label)}` +
+                 `<span class="status-badge status-${badge}">${icon}</span>`;
+  const cls    = `order-btn${primary ? ' order-btn-primary' : ''}`;
+  if (status === 'closed') {                              // 红灯：不可点击(环照样倒数)
+    return `<span class="${cls} order-btn-disabled"${ring ? ` data-ring="${Math.round(ring.frac * 1000) / 1000}"` : ''}` +
+           ` title="${escapeHtml(sTitle)}">${inner}${ring ? buildBtnRing(ring.frac, badge) : ''}</span>`;
+  }
+  /* 进度环沿按钮外轮廓：仅加 data-ring 属性 + 一个SVG子元素，其余标记与原版一致 */
+  return `<a class="${cls}"${ring ? ` data-ring="${Math.round(ring.frac * 1000) / 1000}"` : ''} href="${escapeHtml(url)}"${opt.tel ? '' : ' target="_blank" rel="noopener"'}` +
+         ` title="${escapeHtml(sTitle)}">${inner}${ring ? buildBtnRing(ring.frac, badge) : ''}</a>`;
+}
+
 function buildOrderButtons(cfg, minsOverride) {
   const mins = (minsOverride !== undefined) ? minsOverride : minutesToClose(cfg);
   return ORDER_PLATFORMS
     .filter(([key]) => /^https?:\/\//i.test((cfg[key] || '').trim()))
-    .map(([key, color, primary]) => {
-      const url    = cfg[key].trim();
-      const label  = cfg[key + '_LABEL'] || key.replace('ORDER_', '');
-      const status = platformStatus(key, cfg, mins);
-      /* 进度环：仅生产路径(未传minsOverride)叠加；红灯(打烊中的官网直订)同样带环
-         倒数到开门；手动OFF的平台没有时间相位，orderPhaseProgress自会返回null */
-      const ring   = (minsOverride === undefined) ? orderPhaseProgress(key, cfg) : null;
-      const sTitle = status === 'open'   ? (cfg.ORDER_STATUS_OPEN   || 'Open')
-                   : status === 'cutoff' ? (cfg.ORDER_STATUS_CUTOFF || cfg.ORDER_STATUS_FUTURE || 'Order for later')
-                   : status === 'future' ? (cfg.ORDER_STATUS_FUTURE || 'Order for later')
-                   :                       (cfg.ORDER_STATUS_CLOSED || 'Unavailable');
-      const badge  = status === 'cutoff' ? 'future' : status;   // 截单=黄灯视觉
-      const icon   = badge === 'open' ? '✓' : badge === 'future' ? '◷' : '✕';
-      const inner  = `<span class="order-dot" style="background:${color}"></span>` +
-                     `${escapeHtml(label)}` +
-                     `<span class="status-badge status-${badge}">${icon}</span>`;
-      const cls    = `order-btn${primary ? ' order-btn-primary' : ''}`;
-      if (status === 'closed') {                              // 红灯：不可点击(环照样倒数)
-        return `<span class="${cls} order-btn-disabled"${ring ? ` data-ring="${Math.round(ring.frac * 1000) / 1000}"` : ''}` +
-               ` title="${escapeHtml(sTitle)}">${inner}${ring ? buildBtnRing(ring.frac, badge) : ''}</span>`;
-      }
-      /* 进度环沿按钮外轮廓：仅加 data-ring 属性 + 一个SVG子元素，其余标记与原版一致 */
-      return `<a class="${cls}"${ring ? ` data-ring="${Math.round(ring.frac * 1000) / 1000}"` : ''} href="${escapeHtml(url)}" target="_blank" rel="noopener"` +
-             ` title="${escapeHtml(sTitle)}">${inner}${ring ? buildBtnRing(ring.frac, badge) : ''}</a>`;
-    }).join('');
+    .map(([key, color, primary]) => buildOrderBtn(cfg, mins, minsOverride, key, color, primary))
+    .join('');
+}
+
+/* ── 电话订餐按钮 ────────────────────────────────────────────────────────────
+   与官网直订同一套自家渠道规则: 营业=绿可点(tel:拨号)、打烊=红不可点、歇业=红;
+   进度环用虚拟键 ORDER_PHONE(默认STATUS=ON、CUTOFF=0 → 开门满格、打烊整点走空,
+   打烊后回充), 与 ORDER_ONLINE 的手动开关互不牵连。
+   ORDER_PHONE_STATUS: OFF 可整颗隐藏; 文字改 ORDER_PHONE_LABEL; 号码复用 PHONE_LINK */
+function buildPhoneBtn(cfg, mins, minsOverride) {
+  if (!/^(ON|YES|TRUE|开|1)$/i.test(String(cfg.ORDER_PHONE_STATUS || 'ON').trim())) return '';
+  const status = closureInfo(cfg) ? 'closed' : (mins === null ? 'closed' : 'open');
+  return buildOrderBtn(cfg, mins, minsOverride, 'ORDER_PHONE', '#4A0E0E', false, {
+    url: 'tel:' + String(cfg.PHONE_LINK || '').trim(),
+    label: (cfg.ORDER_PHONE_LABEL !== undefined) ? cfg.ORDER_PHONE_LABEL : '☎ 电话订餐 Call to Order',
+    status: status, tel: true, phaseKey: 'ORDER_PHONE'
+  });
+}
+
+/* 取餐方式小图标(线条风, 描边继承标签颜色) */
+const OG_BAG = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"' +
+  ' stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+  '<path d="M6 8h12l-1.2 12H7.2L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>';
+const OG_CAR = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"' +
+  ' stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+  '<circle cx="7" cy="17" r="2.2"/><circle cx="17" cy="17" r="2.2"/>' +
+  '<path d="M4.8 17H3v-5.5L5.2 7h8.3l3.6 4.5H21V17h-1.8"/><path d="M9.2 17h5.6"/><path d="M4 11.5h12.5"/></svg>';
+
+/* ── 分组订餐区(设计定稿) ─────────────────────────────────────────────────
+   自取推荐组=官网直订; 自取&外送推荐组=电话订餐+全部第三方平台。
+   · 归属可改: ORDER_<平台>_GROUP / ORDER_PHONE_GROUP = pickup 或 pickup_delivery
+   · 组标签: ORDER_GROUP_PICKUP_LABEL / ORDER_GROUP_BOTH_LABEL
+   · 组说明: ORDER_GROUP_PICKUP_NOTE / ORDER_GROUP_BOTH_NOTE(留空=不显示该行)
+   · 某组一个按钮都没有时, 该组连标签带说明整体隐藏 */
+function buildGroupedOrderHtml(cfg) {
+  const mins = minutesToClose(cfg);
+  const groupOf = key => {
+    const v = String(cfg[key + '_GROUP'] || '').trim().toLowerCase();
+    if (v === 'pickup' || v === 'pickup_delivery') return v;
+    return key === 'ORDER_ONLINE' ? 'pickup' : 'pickup_delivery';
+  };
+  let g1 = '', g2 = '';
+  const phone = buildPhoneBtn(cfg, mins);
+  if (phone && groupOf('ORDER_PHONE') === 'pickup_delivery') g2 += phone;   // 电话默认领衔第二组
+  ORDER_PLATFORMS.forEach(([key, color, primary]) => {
+    if (!/^https?:\/\//i.test((cfg[key] || '').trim())) return;
+    const b = buildOrderBtn(cfg, mins, undefined, key, color, primary);
+    if (groupOf(key) === 'pickup') g1 += b; else g2 += b;
+  });
+  if (phone && groupOf('ORDER_PHONE') === 'pickup') g1 += phone;
+  const seg = (btns, icons, labelKey, defLabel, pillCls, noteKey, defNote, noteCls) => {
+    if (!btns) return '';
+    const labelTxt = (cfg[labelKey] !== undefined) ? cfg[labelKey] : defLabel;
+    const noteTxt  = (cfg[noteKey]  !== undefined) ? cfg[noteKey]  : defNote;
+    return `<div class="order-group-label"><span class="order-group-pill ${pillCls}">${icons}` +
+           `<span>${escapeHtml(labelTxt)}</span></span></div>` +
+           `<div class="order-group-row">${btns}</div>` +
+           (String(noteTxt).trim() ? `<p class="order-group-note ${noteCls}">${escapeHtml(noteTxt)}</p>` : '');
+  };
+  return seg(g1, OG_BAG, 'ORDER_GROUP_PICKUP_LABEL', 'RECOMMENDED FOR PICK-UP · 自取推荐',
+             'og-pick', 'ORDER_GROUP_PICKUP_NOTE',
+             'Delivery on Order Direct depends on our own driver availability · 官网直订的外送视本店司机运力而定', 'og-n1')
+       + seg(g2, OG_BAG + OG_CAR, 'ORDER_GROUP_BOTH_LABEL', 'RECOMMENDED FOR PICK-UP & DELIVERY · 自取 & 外送推荐',
+             'og-both', 'ORDER_GROUP_BOTH_NOTE',
+             'Delivery for these options — including phone orders — is fulfilled by online platform drivers: more drivers, more stable · 以上渠道的外送（含电话订餐）均由外送平台司机配送，司机更多、更稳定', 'og-n2');
 }
 
 /* ── 三色图例（按钮下方的颜色说明）────────────────────────────────────────── */
@@ -518,13 +587,14 @@ function buildStatusLegend(cfg) {
 }
 
 function renderOrderPlatforms(cfg) {
-  const html = buildOrderButtons(cfg);
+  const html = buildGroupedOrderHtml(cfg);
   const legend = buildStatusLegend(cfg);
   document.querySelectorAll('.order-status-legend').forEach(el => {
     el.innerHTML = html ? legend : '';
     el.style.display = html ? '' : 'none';
   });
   document.querySelectorAll('.order-platforms').forEach(box => {
+    box.classList.add('order-platforms--grouped');   // 分组版式(纵向堆叠); 原flex规则保持不动
     box.innerHTML = html;
     const section = box.closest('[data-order-section]');
     if (section) section.style.display = html ? '' : 'none';  // 全空→隐藏整块
@@ -690,5 +760,5 @@ function ready(fn) {
 
 /* 供 Node 测试使用（浏览器中此段无副作用）*/
 if (typeof module !== 'undefined') {
-  module.exports = { parseConfig, resolveConfig, resolveStr, parsePopup, buildPopupHtml, popupKey, buildOrderButtons, buildStatusLegend, parseTimeRange, isRestaurantOpen, minutesToClose, platformStatus, getCountdown, ORDER_PLATFORMS, parseAnnouncements, escapeHtml, orderPhaseProgress, fitOrderRings, restaurantNow, closureInfo, parseClosure, hoursIntervals, noticeInfo };
+  module.exports = { parseConfig, resolveConfig, resolveStr, parsePopup, buildPopupHtml, popupKey, buildOrderButtons, buildStatusLegend, parseTimeRange, isRestaurantOpen, minutesToClose, platformStatus, getCountdown, ORDER_PLATFORMS, parseAnnouncements, escapeHtml, orderPhaseProgress, fitOrderRings, restaurantNow, closureInfo, parseClosure, hoursIntervals, noticeInfo, buildOrderBtn, buildPhoneBtn, buildGroupedOrderHtml };
 }

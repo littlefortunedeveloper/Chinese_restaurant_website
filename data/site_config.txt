@@ -79,14 +79,14 @@ NAV_HOURS: Hours & Location 营业信息
 # ══════════════════════ 首页 Hero 大图区 ══════════════════════
 HERO_BTN_MENU: View Our Menu 查看菜单
 HERO_BTN_CALL: ☎ Call to Order 电话订餐
-HERO_BTN_ORDER: 🛒 Order Online 在线订餐
+HERO_BTN_ORDER: Place Order 立即下单
 # 在线订餐按钮的去处: #order = 滚动到首页订餐平台区; 也可填完整网址(如你的Menufy链接)直达
 HERO_BTN_ORDER_LINK: #order
 
 # ══════════════════════ 首页「关于我们」══════════════════════
 ABOUT_KICKER: 关于我们
 ABOUT_TITLE: A Taste of Tradition
-ABOUT_TEXT: For many years, {NAME} has served American Chinese cuisine. Every dish is prepared fresh to order using quality ingredients — from our hand-rolled roast pork egg rolls to our signature General Tso's Chicken. Whether you're joining us for a family dinner or ordering take-out, we're honored to bring the flavors of home to your table.
+ABOUT_TEXT: For many years, {NAME} has served American Chinese cuisine. Every dish is prepared fresh to order using quality ingredients — from our hand-rolled egg rolls to our signature General Tso's Chicken. Whether you're joining us for a family dinner or ordering take-out, we're honored to bring the flavors of home to your table.
 ABOUT_TEXT_ZH: 很多年来，{NAME_ZH}为您呈现地道美式中餐。每道菜均采用新鲜食材现点现做。无论堂食还是外卖，我们都以诚意款待每一位客人。
 # 右侧装饰大字
 ABOUT_GLYPH: 福
@@ -121,9 +121,20 @@ FEATURED_BTN: See Full Menu — 229 Dishes 查看全部菜单
 # 把每个平台后面换成你店铺的真实链接
 # ★ 不用某个平台？把链接删空（冒号后面留空）或删掉整行，按钮就不显示 ★
 # ORDER_ONLINE 是你自己的订餐系统（无佣金），会显示成金色主按钮
-ORDER_KICKER: 在线订餐
-ORDER_TITLE: Order Online
-ORDER_SUB: Skip the wait — order from your favorite platform 选择你常用的平台，在线下单
+ORDER_KICKER: 立即下单
+ORDER_TITLE: Place Order
+ORDER_SUB: Skip the wait — order from your favorite platform, or call us to place your order 选择你常用的平台在线下单，或直接致电订餐
+
+# ── 订餐分组(自取推荐 / 自取&外送推荐) ──
+# 归属默认: 官网直订→自取组, 电话订餐+全部平台→自取&外送组;
+# 想改归属可加 ORDER_DOORDASH_GROUP: pickup 这类键(值 pickup 或 pickup_delivery)
+ORDER_GROUP_PICKUP_LABEL: RECOMMENDED FOR PICK-UP · 自取推荐
+ORDER_GROUP_PICKUP_NOTE: Delivery on Order Direct depends on our own driver availability · 官网直订的外送视本店司机运力而定
+ORDER_GROUP_BOTH_LABEL: RECOMMENDED FOR PICK-UP & DELIVERY · 自取 & 外送推荐
+ORDER_GROUP_BOTH_NOTE: Delivery for these options — including phone orders — is fulfilled by online platform drivers: more drivers, more stable · 以上渠道的外送（含电话订餐）均由外送平台司机配送，司机更多、更稳定
+# 电话订餐按钮: 文字/开关(OFF=隐藏); 号码用上面的 PHONE_LINK, 点击即拨号
+ORDER_PHONE_LABEL: ☎ 电话订餐 Call to Order
+ORDER_PHONE_STATUS: ON
 ORDER_STRIP_LABEL: Order Online 在线订餐:
 
 ORDER_ONLINE: http://www.chinatownkitchenfonddulac.com
