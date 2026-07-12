@@ -86,7 +86,7 @@ HERO_BTN_ORDER_LINK: #order
 # ══════════════════════ 首页「关于我们」══════════════════════
 ABOUT_KICKER: 关于我们
 ABOUT_TITLE: A Taste of Tradition
-ABOUT_TEXT: For many years, {NAME} has served American Chinese cuisine. Every dish is prepared fresh to order using quality ingredients — from our hand-rolled egg rolls to our signature General Tso's Chicken. Whether you're joining us for a family dinner or ordering take-out, we're honored to bring the flavors of home to your table.
+ABOUT_TEXT: For many years, {NAME} has served American Chinese cuisine. Every dish is prepared fresh to order using quality ingredients — from our hand-rolled roast pork egg rolls to our signature General Tso's Chicken. Whether you're joining us for a family dinner or ordering take-out, we're honored to bring the flavors of home to your table.
 ABOUT_TEXT_ZH: 很多年来，{NAME_ZH}为您呈现地道美式中餐。每道菜均采用新鲜食材现点现做。无论堂食还是外卖，我们都以诚意款待每一位客人。
 # 右侧装饰大字
 ABOUT_GLYPH: 福
