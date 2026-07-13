@@ -740,3 +740,35 @@ body.cd-on { padding-top: var(--cd-h, 0px); }
   box-shadow: 0 4px 14px rgba(107, 78, 0, .14);
 }
 .closure-notice.nt-during { background: linear-gradient(135deg, #F7E3AD, #EFD07E); }
+
+
+/* ── 分组订餐区（js/site.js buildGroupedOrderHtml）──────────────────────────
+   容器加 --grouped 修饰类后改纵向堆叠(原 .order-platforms 的flex规则保持不动,
+   供回退); 组内按钮行自管横排换行。标签: 绿=自取推荐, 蓝=自取&外送推荐 */
+.order-platforms--grouped { display: block; }
+.order-group-label {
+  display: flex; align-items: center; gap: 12px;
+  max-width: 640px; margin: 0 auto 12px;
+}
+.order-group-label::before, .order-group-label::after {
+  content: ""; flex: 1; height: 1px; background: #E4D6B8;
+}
+.order-group-pill {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 12px; letter-spacing: .08em; font-weight: 800;
+  border-radius: 999px; padding: 4px 14px;
+  text-align: center; line-height: 1.5;          /* 窄屏可折行, 不横向溢出 */
+}
+.order-group-pill svg { flex: none; }
+.og-pick { color: #27500A; background: #EAF3DE; border: 1px solid #97C459; }
+.og-both { color: #0C447C; background: #E6F1FB; border: 1px solid #85B7EB; }
+.order-group-row {
+  display: flex; flex-wrap: wrap; gap: 14px; justify-content: center;
+  margin: 0 0 6px;
+}
+.order-group-note { text-align: center; font-size: 12px; margin: 8px 0 22px; }
+.order-group-note.og-n1 { color: #8A7A55; }
+.order-group-note.og-n2 { color: #0C447C; margin-bottom: 6px; }
+/* 首页 Place Order 按钮里的袋/车小图标 */
+.order-cta svg { flex: none; }
+.order-cta svg + svg { margin-left: -3px; }

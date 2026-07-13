@@ -76,7 +76,8 @@ SUBTITLE: NONE
 | 订餐按钮进度环 | 自动开启：环沿按钮外圈走一条全程连续的曲线——开门瞬间100%满格，各平台按自己的截单时刻先后走空到0%（DoorDash提前15分、其余30分、官网直订到打烊整点，速率因此不同），截单后到打烊保持0%，打烊后回充、下次开门瞬间恰好又是100%（跨休息日连续回充）；三色环与状态徽章同色，手动OFF的平台不带环。想关闭：在 site_config.txt 加一行 `ORDER_PROGRESS_RING: OFF` |
 | 分类限时供应（如午餐特价只卖到下午3:30） | 在该分类下加一行 `AVAILABLE: Until 3:30 PM`，网页过点自动隐藏整个分类、次日自动恢复；也可写时段 `AVAILABLE: 11:00 AM - 3:30 PM`。只影响网页，打印PDF不受影响。想立即测试效果：浏览器控制台输入 `window.__DEMO_MENU_NOW__ = '2026-07-10T16:00:00'`（专属钩子，只影响菜单时段判断，横幅/倒计时等一切照旧），最多30秒生效，刷新页面即恢复真实时间 |
 | 锁定餐馆时区（访客在哪都显示餐馆当地时间） | 在 site_config.txt 里把 `TIMEZONE: America/Chicago` 改成你的 IANA 时区名；横幅、订餐灯、进度环、午餐显隐、"今日"高亮全部跟随；删掉/留空则按访客本地时间 |
-| 首页"在线订餐"按钮 | 文字改 `HERO_BTN_ORDER`；点击去处改 `HERO_BTN_ORDER_LINK`（默认 `#order` 滚到本页订餐区，也可填某平台完整网址直达）；所有平台都关闭时按钮自动隐藏 |
+| 首页"Place Order"按钮 | 文字改 `HERO_BTN_ORDER`（袋/车小图标固定在按钮里）；点击去处改 `HERO_BTN_ORDER_LINK`（默认 `#order`）；所有订餐渠道都关闭时自动隐藏 |
+| 订餐区分组与电话按钮 | 自取推荐组=官网直订（说明文字 `ORDER_GROUP_PICKUP_NOTE`），自取&外送组=☎电话订餐+全部平台（说明 `ORDER_GROUP_BOTH_NOTE`）；组标签改 `ORDER_GROUP_PICKUP_LABEL` / `ORDER_GROUP_BOTH_LABEL`；平台归属可加 `ORDER_DOORDASH_GROUP: pickup` 这类键调整；电话按钮文字 `ORDER_PHONE_LABEL`、开关 `ORDER_PHONE_STATUS`（OFF=隐藏），号码复用 `PHONE_LINK` 点击即拨，状态与进度环和官网直订同规则 |
 | 放假/临时歇业 | 双钥匙：`CLOSURE_ENABLED: ON` + `CLOSURE: 2026-07-13 to 2026-07-19 装修升级暂停营业 · CLOSED for Renovation · 7/21 恢复`。开始前 `CLOSURE_NOTICE_DAYS`（默认14）天起，顶部出现**独立的**琥珀色预告横幅（前缀 `CLOSURE_NOTICE_PREFIX` 可改），与红色打烊倒计时横幅分开、可同时叠放；歇业期间由预告横幅显示原文、倒计时横幅静默；官网直订变红不可点、第三方保持蓝色"可预订"、进度环按歇业时长从0%回充；过期自动恢复，开关 OFF 时日期不奏效 |
 | 全店涨价10% | 把文件顶部 `PRICE_ADJUST: 0` 改成 `PRICE_ADJUST: +10%` |
 | 全店每道菜涨$1 | 改成 `PRICE_ADJUST: +1.00` |
