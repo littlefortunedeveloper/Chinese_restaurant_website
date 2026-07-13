@@ -16,10 +16,46 @@
 # 改完 push 到 GitHub，约1分钟后生效
 # ==============================================================================
 
-ENABLED: OFF
+ENABLED: ON
 TITLE: 📢 重要通知 Notice
 BUTTON: 知道了 Got it
 
-7月4日国庆节本店休息一天，7月5日恢复正常营业。
-We will be CLOSED on July 4th. Normal hours resume July 5th.
+# 📢 Notice / 通知 / Aviso
+
+---
+
+English  
+Dear Valued Customers,
+
+Our buffet service is temporarily unavailable. Please wait until further notice.
+
+We are still offering:
+- Walk-in ordering
+- To-go orders
+- Delivery orders
+
+Thank you for your understanding and support!
+
+---
+
+Español  
+Estimados clientes:
+
+Nuestro servicio de buffet está temporalmente suspendido. Por favor, espere hasta nuevo aviso.
+
+Seguimos ofreciendo:
+- Pedidos en el restaurante (Walk-in)
+- Pedidos para llevar
+- Servicio a domicilio (Delivery)
+
+¡Gracias por su comprensión y apoyo!
+
+---
+
+中文  
+尊敬的顾客：  
+本店暂时停止提供自助餐（Buffet）服务，恢复时间请等待进一步通知。  
+目前我们仍提供：堂食点餐（Walk-in Order）、外带（To Go）及外送（Delivery）。  
+感谢您的理解与支持！
+
 订餐电话 Call to order: {PHONE}
