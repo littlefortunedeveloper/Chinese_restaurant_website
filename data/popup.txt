@@ -20,7 +20,7 @@ ENABLED: ON
 TITLE: 📢 重要通知 Notice
 BUTTON: 知道了 Got it
 
-# 📢 Notice / 通知 / Aviso
+# 📢 Notice
 
 ---
 
@@ -35,27 +35,5 @@ We are still offering:
 - Delivery orders
 
 Thank you for your understanding and support!
-
----
-
-Español  
-Estimados clientes:
-
-Nuestro servicio de buffet está temporalmente suspendido. Por favor, espere hasta nuevo aviso.
-
-Seguimos ofreciendo:
-- Pedidos en el restaurante (Walk-in)
-- Pedidos para llevar
-- Servicio a domicilio (Delivery)
-
-¡Gracias por su comprensión y apoyo!
-
----
-
-中文  
-尊敬的顾客：  
-本店暂时停止提供自助餐（Buffet）服务，恢复时间请等待进一步通知。  
-目前我们仍提供：堂食点餐（Walk-in Order）、外带（To Go）及外送（Delivery）。  
-感谢您的理解与支持！
 
 订餐电话 Call to order: {PHONE}
