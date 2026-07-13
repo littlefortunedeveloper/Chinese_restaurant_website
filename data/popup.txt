@@ -22,9 +22,6 @@ BUTTON: 知道了 Got it
 
 # 📢 Notice
 
----
-
-English  
 Dear Valued Customers,
 
 Our buffet service is temporarily unavailable. Please wait until further notice.
