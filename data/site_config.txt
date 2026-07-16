@@ -146,10 +146,10 @@ DEALS_ENABLED: ON
 # 领取方式: auto=票面显示"自动生效", manual="下单时请告知", select="结账时请选择";
 # 不写=不显示领取方式。
 # 文字标记通用: ~~旧价~~ 显示为划线, **新价** 显示为红色醒目
-DEAL_1: SPEND $35+ · 满 $35 | FREE FREE Egg Roll · 送春卷 | direct | select
-DEAL_2: SPEND $55+ · 满 $55 | FREE Crab Rangoon · 送蟹角 | direct | select
-#DEAL_1: SPEND ~~$35~~ **$30**+ · 满 ~~$35~~ **$30** | FREE Egg Roll · 送春卷 | direct | select
-#DEAL_2: SPEND ~~$55~~ **$50**+ · 满 ~~$55~~ **$50** | FREE Crab Rangoon · 送蟹角 | direct | select
+DEAL_1: SPEND subtotal of $35+ · 满 $35 | FREE FREE Egg Roll · 送春卷 | direct | select
+DEAL_2: SPEND subtotal of $55+ · 满 $55 | FREE Crab Rangoon · 送蟹角 | direct | select
+DEAL_3: SPEND subtotal of ~~$25~~ **$35**+ · 满 ~~$35~~ **$30** | FREE Egg Roll · 送春卷 | all | Valid through 7/16 · 有效期至 7/16  | auto
+DEAL_4: SPEND subtotal of ~~$35~~ **$55**+ · 满 ~~$55~~ **$50** | FREE Crab Rangoon · 送蟹角 | all | Valid through 7/16 · 有效期至 7/16  | auto
 # 更多范围写法示例(去掉行首#即生效):
 # DEAL_3: SPEND $20+ · 满 $20 | FREE Wonton Soup · 送云吞汤 | phone | Valid through 8/31 · 有效期至 8/31
 # DEAL_4: SPEND $25+ · 满 $25 | FREE Soft Drink · 送汽水 | all
