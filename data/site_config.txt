@@ -209,7 +209,7 @@ COUNTDOWN_CLOSED_LINK_TEXT: Store Hours 查看营业时间 →
 # 午市时段(留空 = 不启用此功能)。快结束前 COUNTDOWN_MINUTES 分钟起, 横幅显示
 # 午市倒计时(与打烊倒计时同机制); 午市结束后显示"晚市"提示 DINNER_NOTE_MINUTES
 # 分钟(0=不提示)后自动隐藏; 打烊倒计时的优先级始终更高
-LUNCH_HOURS: 11:00 AM – 3:00 PM
+LUNCH_HOURS: 11:00 AM – 3:30 PM
 # 午市倒计时提前多少分钟开始(独立于打烊倒计时的 COUNTDOWN_MINUTES)
 LUNCH_COUNTDOWN_MINUTES: 60
 COUNTDOWN_LUNCH_END: 🍜 Lunch hours ending — {MIN} min · 午市即将结束，还有 {MIN} 分钟
