@@ -113,7 +113,7 @@ const ORDER_PLATFORMS = [
   //  配置key            品牌识别色           是否自家主按钮
   ['ORDER_ONLINE',    '#C9A227', true ],
   ['ORDER_DOORDASH',  '#EB1700', false],
-  ['ORDER_UBEREATS',  '#06C167', false],
+  ['ORDER_UBEREATS',  '#000000', false],   // Uber母品牌黑; 绿色让位给"营业"状态语义
   ['ORDER_GRUBHUB',   '#F63440', false],
   ['ORDER_MENUFY',    '#2E7CF6', false],
   ['ORDER_EATSTREET', '#7A3DF0', false],
@@ -204,8 +204,24 @@ function getCountdown(cfg, now) {
       else                       open = false;    // 今日已打烊
     }
   }
-  if (open)                                       // 营业中：仅临近打烊时倒计时
-    return (W > 0 && toClose <= W) ? { mode: 'closing', minutes: Math.ceil(toClose) } : null;
+  if (open) {                                     // 营业中
+    if (W > 0 && toClose <= W)                    // 临近打烊: 倒计时优先级最高
+      return { mode: 'closing', minutes: Math.ceil(toClose) };
+    /* 午市横幅(LUNCH_HOURS 留空=不启用): 快结束→倒计时(与打烊同机制);
+       结束后温和提示"晚市" DINNER_NOTE_MINUTES 分钟(默认90, 0=不提示)后自动隐藏 */
+    const L = parseTimeRange(cfg.LUNCH_HOURS);
+    if (L && L.close > L.open) {
+      const toLunchEnd = L.close - nowF;
+      const LW = cfg.LUNCH_COUNTDOWN_MINUTES === undefined ? W
+               : (parseFloat(cfg.LUNCH_COUNTDOWN_MINUTES) || 0);   // 午市倒计时窗口(独立于打烊窗口)
+      if (LW > 0 && nowF >= L.open && toLunchEnd > 0 && toLunchEnd <= LW)
+        return { mode: 'lunchend', minutes: Math.ceil(toLunchEnd) };
+      const DN = cfg.DINNER_NOTE_MINUTES === undefined ? 90 : (parseFloat(cfg.DINNER_NOTE_MINUTES) || 0);
+      if (toLunchEnd <= 0 && nowF < L.close + DN)
+        return { mode: 'dinner' };
+    }
+    return null;
+  }
   if (W > 0 && toOpen !== null && toOpen <= W)    // 打烊中但快开门：开门倒计时优先
     return { mode: 'opening', minutes: Math.ceil(toOpen) };
   return { mode: 'closed' };                      // 其余打烊时间：常驻打烊提示
@@ -233,6 +249,8 @@ function renderCountdown(cfg) {
       : '');
   } else {
     const tpl = cd.mode === 'opening' ? (cfg.COUNTDOWN_OPENING || '⏰ Opening in {MIN} min')
+            : cd.mode === 'lunchend' ? (cfg.COUNTDOWN_LUNCH_END || '🍜 Lunch hours ending — {MIN} min · 午市即将结束，还有 {MIN} 分钟')
+            : cd.mode === 'dinner'   ? (cfg.COUNTDOWN_DINNER    || '🍽 Dinner hours · 晚市供应中')
                                       : (cfg.COUNTDOWN_CLOSING || '⏰ Closing in {MIN} min');
     el.textContent = tpl.replace(/\{MIN\}/g, cd.minutes || '');
   }
@@ -387,13 +405,13 @@ function orderPhaseProgress(key, cfg, now) {
      到歇业后第一次真实开门瞬间恰好100%(关多久充多久; 官网直订红环同样) */
   const clP = parseClosure(cfg, now);
   if (clP) {
-    if (!clP.start) return closureInfo(cfg, now) ? { frac: 0 } : null;  // 无限期: 归零
+    if (!clP.start) return closureInfo(cfg, now) ? { frac: 0, prog: 0, to: null } : null;  // 无限期: 归零且不渐变
     const before = hoursIntervals(cfg, clP.start, -4, 0).filter(p => p[1] <= clP.start);
     const after  = hoursIntervals(cfg, clP.end, 0, 10).filter(p => p[0] >= clP.end);
     const ws = before.length ? before[before.length - 1][1] : clP.start;
     const we = after.length  ? after[0][0] : clP.end;
-    if (now >= ws && now < we)
-      return { frac: clamp01((now - ws) / (we - ws)) };
+    if (now >= ws && now < we)                                          // 歇业回充 → 开门变绿
+      return { frac: clamp01((now - ws) / (we - ws)), prog: clamp01((now - ws) / (we - ws)), to: 'open' };
     /* 窗口之外(未开始/已彻底恢复) → 按正常逻辑继续 */
   }
   const cutoff = parseFloat(cfg[key + '_CUTOFF']) || 0;
@@ -403,24 +421,27 @@ function orderPhaseProgress(key, cfg, now) {
   const cur = iv.find(p => now >= p[0] && now < p[1]);
   if (cur) {
     const stop = stopOf(cur);
-    if (now < stop)                                             // 开门100% → 截单0%(各平台速率不同)
-      return { frac: clamp01((stop - now) / (stop - cur[0])) };
-    return { frac: 0 };                                         // 截单后到打烊: 保持0%
+    if (now < stop) {                                           // 开门100% → 截单0%(各平台速率不同)
+      const f = clamp01((stop - now) / (stop - cur[0]));        // 渐变: 绿 → 黄(第三方)/红(自家)
+      return { frac: f, prog: 1 - f, to: cutoff > 0 ? 'future' : 'closed' };
+    }
+    return { frac: 0, prog: 1, to: 'future' };                  // 截单后到打烊: 持平, 已是纯黄
   }
   const prev = iv.slice().reverse().find(p => p[1] <= now);     // 打烊后: 从打烊时刻0%起回充,
   const next = iv.find(p => p[0] > now);                        // 下次开门瞬间恰好100%(无缝衔接绿灯)
   if (!prev || !next) return null;
-  return { frac: clamp01((now - prev[1]) / (next[0] - prev[1])) };
+  const f = clamp01((now - prev[1]) / (next[0] - prev[1]));   // 打烊回充: 黄/红 → 开门瞬间纯绿
+  return { frac: f, prog: f, to: 'open' };
 }
 
 /* 环形SVG：沿整个按钮外轮廓走一圈。故意不用 pathLength 归一——老Safari(≈16之前)
    对 rect 不支持该属性会把环画错；改由 fitOrderRings 用真实周长算 dash，
    dasharray/dashoffset 是 SVG 1.1 古老特性, 全浏览器兼容。进度值经按钮的
    data-ring 属性传给贴合函数。 */
-function buildBtnRing(frac, badge) {
+function buildBtnRing(frac, badge, mixColor) {
   return '<svg class="btn-ring ring-' + badge + '" aria-hidden="true">' +
          '<path class="btn-ring-track"></path>' +
-         '<path class="btn-ring-fill"></path></svg>';
+         '<path class="btn-ring-fill"' + (mixColor ? ' style="stroke: ' + mixColor + '"' : '') + '></path></svg>';
 }
 
 /* 按钮宽度随文字/换行变化 → 渲染后实测每个按钮的像素尺寸，把环的几何贴上去。
@@ -495,17 +516,27 @@ function buildOrderBtn(cfg, mins, minsOverride, key, color, primary, opt) {
                :                       (cfg.ORDER_STATUS_CLOSED || 'Unavailable');
   const badge  = status === 'cutoff' ? 'future' : status;   // 截单=黄灯视觉
   const icon   = badge === 'open' ? '✓' : badge === 'future' ? '◷' : '✕';
+  /* 过渡色: 仅进度环在相位中从当前状态色渐变到下一状态色(翻转瞬间=纯色);
+     状态点保持三色纯色 —— 点=当前状态的定论, 环=趋势 */
+  const mixCol = (ring && ring.to && ring.to !== badge) ? statusMix(badge, ring.to, ring.prog) : null;
+  /* 整钮填色: 背景铺满一层与环渐变同色的浅色(16%透明), 随相位实时变色;
+     background-image 平铺, 不动底色/圆角; 无环(手动OFF/总开关关)则不上色 */
+  const tintBase = ring ? (mixCol || statusMix(badge, badge, 0)) : null;
+  const tint = tintBase ? tintBase.replace('hsl(', 'hsla(').replace(')', ', 0.16)') : null;
+  const water = tint
+    ? ` style="background-image: linear-gradient(0deg, ${tint}, ${tint})"`
+    : '';
   const inner  = `<span class="order-dot" style="background:${color}"></span>` +
                  `${escapeHtml(label)}` +
                  `<span class="status-badge status-${badge}">${icon}</span>`;
   const cls    = `order-btn${primary ? ' order-btn-primary' : ''}`;
   if (status === 'closed') {                              // 红灯：不可点击(环照样倒数)
-    return `<span class="${cls} order-btn-disabled"${ring ? ` data-ring="${Math.round(ring.frac * 1000) / 1000}"` : ''}` +
-           ` title="${escapeHtml(sTitle)}">${inner}${ring ? buildBtnRing(ring.frac, badge) : ''}</span>`;
+    return `<span class="${cls} order-btn-disabled"${ring ? ` data-ring="${Math.round(ring.frac * 1000) / 1000}"` : ''}${water}` +
+           ` title="${escapeHtml(sTitle)}">${inner}${ring ? buildBtnRing(ring.frac, badge, mixCol) : ''}</span>`;
   }
   /* 进度环沿按钮外轮廓：仅加 data-ring 属性 + 一个SVG子元素，其余标记与原版一致 */
-  return `<a class="${cls}"${ring ? ` data-ring="${Math.round(ring.frac * 1000) / 1000}"` : ''} href="${escapeHtml(url)}"${opt.tel ? '' : ' target="_blank" rel="noopener"'}` +
-         ` title="${escapeHtml(sTitle)}">${inner}${ring ? buildBtnRing(ring.frac, badge) : ''}</a>`;
+  return `<a class="${cls}"${ring ? ` data-ring="${Math.round(ring.frac * 1000) / 1000}"` : ''}${water} href="${escapeHtml(url)}"${opt.tel ? '' : ' target="_blank" rel="noopener"'}` +
+         ` title="${escapeHtml(sTitle)}">${inner}${ring ? buildBtnRing(ring.frac, badge, mixCol) : ''}</a>`;
 }
 
 function buildOrderButtons(cfg, minsOverride) {
@@ -531,6 +562,22 @@ function buildPhoneBtn(cfg, mins, minsOverride) {
   });
 }
 
+/* ── 状态过渡色 ──────────────────────────────────────────────────────────────
+   环与状态点在相位进行中沿两个状态色之间渐变: 相位开始=当前状态纯色, 相位结束
+   (翻转瞬间)=下一状态纯色。用HSL色相最短路径插值——绿(140°)→黄(42°)→红(0°)
+   正好是红绿灯色带, 避免RGB直混出现泥色; 四个相位衔接点全程连续。
+   #22C55E=hsl(142,71%,45%) · #FFB300=hsl(42,100%,50%) · #EF4444=hsl(0,84%,60%) */
+const STATUS_HSL = { open: [142, 71, 45], future: [42, 100, 50], closed: [0, 84, 60] };
+function statusMix(fromBadge, toBadge, t) {
+  const a = STATUS_HSL[fromBadge], b = STATUS_HSL[toBadge];
+  if (!a || !b) return null;
+  t = (isFinite(t) && t > 0) ? (t > 1 ? 1 : t) : 0;
+  const dh = ((b[0] - a[0] + 540) % 360) - 180;              // 色相最短路径
+  const h = Math.round(a[0] + dh * t), s = Math.round(a[1] + (b[1] - a[1]) * t),
+        l = Math.round(a[2] + (b[2] - a[2]) * t);
+  return 'hsl(' + ((h % 360) + 360) % 360 + ', ' + s + '%, ' + l + '%)';
+}
+
 /* 取餐方式小图标(线条风, 描边继承标签颜色) */
 const OG_BAG = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"' +
   ' stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
@@ -539,6 +586,96 @@ const OG_CAR = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stro
   ' stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
   '<circle cx="7" cy="17" r="2.2"/><circle cx="17" cy="17" r="2.2"/>' +
   '<path d="M4.8 17H3v-5.5L5.2 7h8.3l3.6 4.5H21V17h-1.8"/><path d="M9.2 17h5.6"/><path d="M4 11.5h12.5"/></svg>';
+
+/* ── 满额赠送(SPECIAL DEALS) ─────────────────────────────────────────────────
+   全部由 site_config.txt 驱动, 改活动零代码:
+   · DEALS_ENABLED: ON               总开关(仅明确 ON/YES/TRUE/开/1 生效; 其余=全部隐藏)
+   · DEAL_1: 门槛 | 赠品 | 范围 | 有效期    每行一条, 竖线分段; 第3/4段可省
+       范围: direct / phone / online(在线渠道,不含电话) / all / 逗号清单(如 doordash,phone)
+       文字标记(任何段通用): ~~旧价~~ = 划线, **新价** = 红色醒目
+   · DEAL_LABEL: 区标题文字 · ORDER_DIRECT_CARD_NOTE: 官网直订下的银行卡提醒(留空=隐藏,
+     不随活动开关 —— 它是支付提示不是促销)
+   编号可留空档(删掉 DEAL_2 保留 1、3 也行); 门槛或赠品为空的行自动跳过;
+   总开关关闭或没有任何活动时整块(含标题)消失。 */
+const escMd = t => escapeHtml(t)
+  .replace(/~~([^~]+)~~/g, '<s class="dt-old">$1</s>')
+  .replace(/\*\*([^*]+)\*\*/g, '<b class="dt-new">$1</b>');
+
+const DEAL_SCOPE_TAG = {            // 关键词范围: [文字, 前景, 底色, 边色]
+  direct: ['Order Direct only · 仅官网直订', '#8A6A12', '#FFF3D6', '#D9B75A'],
+  phone:  ['Phone orders only · 仅电话订餐', '#7A1F1F', '#FBE9E4', '#E2A08F'],
+  online: ['Online orders only · 仅在线下单', '#0C447C', '#E6F1FB', '#85B7EB'],
+  all:    ['All platforms · 全渠道 · 含电话', '#27500A', '#EAF3DE', '#97C459']
+};
+const DEAL_SCOPE_NAMES = { direct: '官网直订', phone: '电话订餐', doordash: 'DoorDash',
+  ubereats: 'Uber Eats', grubhub: 'Grubhub', menufy: 'Menufy', eatstreet: 'EatStreet' };
+
+/* 有效期文字里最后一个可解析日期 = 到期日(含当天; 次日0点起该活动自动消失)。
+   认 2026-08-31 / 8/31(不写年=今年, 跨年活动请写完整年份); 解析不出日期 = 纯展示、
+   永不自动下架 */
+function dealExpiry(validText, now) {
+  const re = /(\d{4})-(\d{1,2})-(\d{1,2})|(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/g;
+  let m, last = null;
+  while ((m = re.exec(String(validText || '')))) {
+    last = m[1] ? [+m[1], +m[2], +m[3]]
+                : [m[6] ? (+m[6] < 100 ? 2000 + +m[6] : +m[6]) : now.getFullYear(), +m[4], +m[5]];
+  }
+  if (!last) return null;
+  const d = new Date(last[0], last[1] - 1, last[2] + 1);       // 含到期日 → 次日0点
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function parseDeals(cfg, now) {
+  if (!/^(ON|YES|TRUE|开|1)$/i.test(String(cfg.DEALS_ENABLED || '').trim())) return [];
+  now = now || restaurantNow(cfg);
+  const out = [];
+  for (let i = 1; i <= 30; i++) {                    // 编号宽容: 1..30 内允许留空档
+    const raw = cfg['DEAL_' + i];
+    if (raw === undefined) continue;
+    const p = String(raw).split('|').map(s => s.trim());
+    if (!p[0] || !p[1]) continue;                    // 门槛/赠品缺一即跳过
+    let apply = '', valid = '';
+    for (const s of p.slice(3)) {                    // 第3段之后顺序自由: auto/manual 或有效期文字
+      if (/^(auto|manual|select)$/i.test(s)) apply = s.toLowerCase();
+      else if (s) valid = s;
+    }
+    const exp = dealExpiry(valid, now);
+    if (exp && now >= exp) continue;                 // 已过期 → 自动消失
+    out.push({ th: p[0], gift: p[1], scope: (p[2] || 'direct').toLowerCase(), valid, apply });
+  }
+  return out;
+}
+
+const DEAL_APPLY_TAG = {
+  auto:   ['Applied automatically · 自动生效', '#27500A', '#EAF3DE', '#97C459'],
+  manual: ['Mention when ordering · 下单时请告知', '#9A6B00', '#FFF3D6', '#E0BC66'],
+  select: ['Select at checkout · 结账时请选择', '#0C447C', '#E6F1FB', '#85B7EB']
+};
+function dealChips(scope, apply) {
+  let t = DEAL_SCOPE_TAG[scope];
+  if (!t) {                                          // 自定义清单: 代号映射成可读标签
+    const names = String(scope).split(',').map(k => DEAL_SCOPE_NAMES[k.trim()] || escapeHtml(k.trim()));
+    t = ['Only 仅: ' + names.join(' + '), '#5F5E5A', '#F1EFE8', '#D3D1C7'];
+  }
+  const a = DEAL_APPLY_TAG[apply];
+  return `<div class="dt-scope"><span style="color:${t[1]};background:${t[2]};border-color:${t[3]}">${t[0]}</span>` +
+         (a ? `<span style="color:${a[1]};background:${a[2]};border-color:${a[3]}">${a[0]}</span>` : '') +
+         `</div>`;
+}
+
+function buildDealsHtml(cfg, now) {
+  const deals = parseDeals(cfg, now);
+  if (!deals.length) return '';
+  const label = (cfg.DEAL_LABEL !== undefined) ? cfg.DEAL_LABEL
+              : '🎁 SPECIAL DEALS · 满额赠送（各票适用范围见票面标签）';
+  return `<div class="deal-label"><span class="deal-pill">${escapeHtml(label)}</span></div>` +
+         `<div class="deal-strip">` + deals.map(d =>
+           `<div class="deal-ticket"><span><div class="dt-th">${escMd(d.th)}</div>` +
+           `<div class="dt-gift">${escMd(d.gift)}</div>` +
+           dealChips(d.scope, d.apply) +
+           (d.valid ? `<div class="dt-valid">${escMd(d.valid)}</div>` : '') +
+           `</span></div>`).join('') + `</div>`;
+}
 
 /* ── 分组订餐区(设计定稿) ─────────────────────────────────────────────────
    自取推荐组=官网直订; 自取&外送推荐组=电话订餐+全部第三方平台。
@@ -562,20 +699,24 @@ function buildGroupedOrderHtml(cfg) {
     if (groupOf(key) === 'pickup') g1 += b; else g2 += b;
   });
   if (phone && groupOf('ORDER_PHONE') === 'pickup') g1 += phone;
-  const seg = (btns, icons, labelKey, defLabel, pillCls, noteKey, defNote, noteCls) => {
+  const seg = (btns, icons, labelKey, defLabel, pillCls, extra, noteKey, defNote, noteCls) => {
     if (!btns) return '';
     const labelTxt = (cfg[labelKey] !== undefined) ? cfg[labelKey] : defLabel;
     const noteTxt  = (cfg[noteKey]  !== undefined) ? cfg[noteKey]  : defNote;
     return `<div class="order-group-label"><span class="order-group-pill ${pillCls}">${icons}` +
            `<span>${escapeHtml(labelTxt)}</span></span></div>` +
-           `<div class="order-group-row">${btns}</div>` +
+           `<div class="order-group-row">${btns}</div>` + (extra || '') +
            (String(noteTxt).trim() ? `<p class="order-group-note ${noteCls}">${escapeHtml(noteTxt)}</p>` : '');
   };
-  return seg(g1, OG_BAG, 'ORDER_GROUP_PICKUP_LABEL', 'RECOMMENDED FOR PICK-UP · 自取推荐',
-             'og-pick', 'ORDER_GROUP_PICKUP_NOTE',
+  /* 官网直订下的银行卡提醒(支付提示, 独立于满赠总开关; 留空=隐藏) */
+  const cardNote = String(cfg.ORDER_DIRECT_CARD_NOTE || '').trim()
+    ? `<p class="card-note">${escMd(cfg.ORDER_DIRECT_CARD_NOTE.trim())}</p>` : '';
+  return buildDealsHtml(cfg)
+       + seg(g1, OG_BAG, 'ORDER_GROUP_PICKUP_LABEL', 'RECOMMENDED FOR PICK-UP · 自取推荐',
+             'og-pick', cardNote, 'ORDER_GROUP_PICKUP_NOTE',
              'Delivery on Order Direct depends on our own driver availability · 官网直订的外送视本店司机运力而定', 'og-n1')
        + seg(g2, OG_BAG + OG_CAR, 'ORDER_GROUP_BOTH_LABEL', 'RECOMMENDED FOR PICK-UP & DELIVERY · 自取 & 外送推荐',
-             'og-both', 'ORDER_GROUP_BOTH_NOTE',
+             'og-both', '', 'ORDER_GROUP_BOTH_NOTE',
              'Delivery for these options — including phone orders — is fulfilled by online platform drivers: more drivers, more stable · 以上渠道的外送（含电话订餐）均由外送平台司机配送，司机更多、更稳定', 'og-n2');
 }
 
@@ -760,5 +901,5 @@ function ready(fn) {
 
 /* 供 Node 测试使用（浏览器中此段无副作用）*/
 if (typeof module !== 'undefined') {
-  module.exports = { parseConfig, resolveConfig, resolveStr, parsePopup, buildPopupHtml, popupKey, buildOrderButtons, buildStatusLegend, parseTimeRange, isRestaurantOpen, minutesToClose, platformStatus, getCountdown, ORDER_PLATFORMS, parseAnnouncements, escapeHtml, orderPhaseProgress, fitOrderRings, restaurantNow, closureInfo, parseClosure, hoursIntervals, noticeInfo, buildOrderBtn, buildPhoneBtn, buildGroupedOrderHtml };
+  module.exports = { parseConfig, resolveConfig, resolveStr, parsePopup, buildPopupHtml, popupKey, buildOrderButtons, buildStatusLegend, parseTimeRange, isRestaurantOpen, minutesToClose, platformStatus, getCountdown, ORDER_PLATFORMS, parseAnnouncements, escapeHtml, orderPhaseProgress, fitOrderRings, restaurantNow, closureInfo, parseClosure, hoursIntervals, noticeInfo, buildOrderBtn, buildPhoneBtn, buildGroupedOrderHtml, statusMix, parseDeals, buildDealsHtml };
 }

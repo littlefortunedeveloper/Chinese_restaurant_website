@@ -644,12 +644,12 @@ a:hover { color: var(--red-600); }
   font-size: 11px; font-weight: 900; line-height: 1; color: #fff;
   font-family: -apple-system, 'Segoe UI', sans-serif;
 }
-.status-open   { background: #1FA84D; box-shadow: 0 1px 4px rgba(31,168,77,.4);  animation: statusPulse 2.2s ease-in-out infinite; }
-.status-future { background: #E8A400; box-shadow: 0 1px 4px rgba(232,164,0,.4); }
-.status-closed { background: #D63333; box-shadow: 0 1px 4px rgba(214,51,51,.35); }
+.status-open   { background: #22C55E; box-shadow: 0 1px 4px rgba(34,197,94,.45);  animation: statusPulse 2.2s ease-in-out infinite; }
+.status-future { background: #FFB300; box-shadow: 0 1px 4px rgba(255,179,0,.45); }
+.status-closed { background: #EF4444; box-shadow: 0 1px 4px rgba(239,68,68,.4); }
 @keyframes statusPulse {
-  0%, 100% { box-shadow: 0 1px 4px rgba(31,168,77,.4); }
-  50%      { box-shadow: 0 1px 8px rgba(31,168,77,.65); }
+  0%, 100% { box-shadow: 0 1px 4px rgba(34,197,94,.45); }
+  50%      { box-shadow: 0 1px 8px rgba(34,197,94,.7); }
 }
 
 /* 红灯禁用态：变灰、不可点击 */
@@ -722,9 +722,9 @@ body.cd-on { padding-top: var(--cd-h, 0px); }
 .btn-ring path { fill: none; stroke-width: 2.5; }
 .btn-ring .btn-ring-track { stroke: var(--line); }       /* 轨道=边框色, 未走完部分即普通边框 */
 .btn-ring .btn-ring-fill  { stroke-linecap: round; }
-.btn-ring.ring-open   .btn-ring-fill { stroke: #1FA84D; }  /* = .status-open 徽章色 */
-.btn-ring.ring-future .btn-ring-fill { stroke: #E8A400; }  /* = .status-future 徽章色 */
-.btn-ring.ring-closed .btn-ring-fill { stroke: #D63333; }  /* = .status-closed 徽章色 */
+.btn-ring.ring-open   .btn-ring-fill { stroke: #22C55E; }  /* = .status-open 状态色 */
+.btn-ring.ring-future .btn-ring-fill { stroke: #FFB300; }  /* = .status-future 状态色 */
+.btn-ring.ring-closed .btn-ring-fill { stroke: #EF4444; }  /* = .status-closed 状态色 */
 
 
 /* ── 歇业预告横幅（js/site.js renderNotice; 与倒计时横幅是两条独立横幅）────
@@ -772,3 +772,45 @@ body.cd-on { padding-top: var(--cd-h, 0px); }
 /* 首页 Place Order 按钮里的袋/车小图标 */
 .order-cta svg { flex: none; }
 .order-cta svg + svg { margin-left: -3px; }
+
+
+/* 午市结束倒计时 / 晚市提示（countdown lunchend/dinner 模式）*/
+.countdown-banner.cd-lunchend {
+  background: linear-gradient(135deg, #FFF3D6, #F2D289);
+  color: #6B4E00; border-bottom: 2px solid #E8A400;
+}
+.countdown-banner.cd-dinner {
+  background: linear-gradient(135deg, #FBF3E2, #EFE0BC);
+  color: #4A3A10; border-bottom: 2px solid #C9A227;
+  animation: none;                                /* 晚市提示是静态信息, 不呼吸 */
+}
+
+
+/* ── 满额赠送票根（js/site.js buildDealsHtml; 全配置驱动, 无活动整块消失）── */
+.deal-label { display: flex; align-items: center; gap: 12px; max-width: 660px; margin: 0 auto 12px; }
+.deal-label::before, .deal-label::after { content: ""; flex: 1; height: 1px; background: #E4D6B8; }
+.deal-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11.5px; letter-spacing: .08em; font-weight: 800;
+  border-radius: 999px; padding: 3px 13px;
+  color: #8E2323; background: #FBE9E4; border: 1px solid #E2A08F;
+  text-align: center; line-height: 1.5;
+}
+.deal-strip { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin: 0 auto 22px; max-width: 660px; }
+.deal-ticket {
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  padding: 9px 20px; border: 1.5px dashed #C9A227; border-radius: 12px;
+  background: linear-gradient(135deg, #FFFBEF, #FFF1D6);
+}
+.deal-ticket .dt-th { font-size: 11px; letter-spacing: .1em; color: #B8901F; font-weight: 800; }
+.deal-ticket .dt-gift { font-size: 14px; color: #4A0E0E; font-weight: 800; margin-top: 2px; }
+.deal-ticket .dt-old { opacity: .5; text-decoration: line-through; }
+.deal-ticket .dt-new { color: #B23A3A; font-weight: 900; font-size: 1.15em; font-style: normal; }
+.deal-ticket .dt-scope { margin-top: 5px; display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+.deal-ticket .dt-scope span {
+  display: inline-block; font-size: 10px; letter-spacing: .05em; font-weight: 800;
+  border-radius: 999px; padding: 2px 10px; border: 1px solid;
+}
+.deal-ticket .dt-valid { font-size: 10.5px; color: #8A7A55; margin-top: 3px; letter-spacing: .03em; font-weight: 400; }
+.deal-ticket .dt-valid .dt-new { font-size: 1em; font-weight: 800; }
+.card-note { text-align: center; font-size: 12px; color: #8E2323; margin: 4px 0 10px; }

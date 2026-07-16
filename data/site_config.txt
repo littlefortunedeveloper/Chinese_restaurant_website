@@ -86,7 +86,7 @@ HERO_BTN_ORDER_LINK: #order
 # ══════════════════════ 首页「关于我们」══════════════════════
 ABOUT_KICKER: 关于我们
 ABOUT_TITLE: A Taste of Tradition
-ABOUT_TEXT: For many years, {NAME} has served American Chinese cuisine. Every dish is prepared fresh to order using quality ingredients — from our hand-rolled egg rolls to our signature General Tso's Chicken. Whether you're joining us for a family dinner or ordering take-out, we're honored to bring the flavors of home to your table.
+ABOUT_TEXT: For many years, {NAME} has served American Chinese cuisine. Every dish is prepared fresh to order using quality ingredients — from our hand-rolled roast pork egg rolls to our signature General Tso's Chicken. Whether you're joining us for a family dinner or ordering take-out, we're honored to bring the flavors of home to your table.
 ABOUT_TEXT_ZH: 很多年来，{NAME_ZH}为您呈现地道美式中餐。每道菜均采用新鲜食材现点现做。无论堂食还是外卖，我们都以诚意款待每一位客人。
 # 右侧装饰大字
 ABOUT_GLYPH: 福
@@ -123,7 +123,7 @@ FEATURED_BTN: See Full Menu — 229 Dishes 查看全部菜单
 # ORDER_ONLINE 是你自己的订餐系统（无佣金），会显示成金色主按钮
 ORDER_KICKER: 立即下单
 ORDER_TITLE: Place Order
-ORDER_SUB: Skip the wait — order from your favorite platform, or call us to place your order 选择你常用的平台在线下单，或直接致电订餐
+ORDER_SUB: Speed up your order — order from your favorite platform, or call us to place your order 选择你常用的平台在线下单，或直接致电订餐
 
 # ── 订餐分组(自取推荐 / 自取&外送推荐) ──
 # 归属默认: 官网直订→自取组, 电话订餐+全部平台→自取&外送组;
@@ -135,9 +135,32 @@ ORDER_GROUP_BOTH_NOTE: Delivery for these options — including phone orders —
 # 电话订餐按钮: 文字/开关(OFF=隐藏); 号码用上面的 PHONE_LINK, 点击即拨号
 ORDER_PHONE_LABEL: ☎ 电话订餐 Call to Order
 ORDER_PHONE_STATUS: ON
+
+# ── 满额赠送(SPECIAL DEALS) ──
+# 总开关: 仅明确 ON 时下面的 DEAL 行才显示; OFF/留空 = 全部隐藏(活动结束拨这里即可)
+DEALS_ENABLED: ON
+# 每行一条: 门槛 | 赠品 | 范围 | 有效期 | auto或manual (第3段起可省, 后两段顺序随意)。
+# 范围: direct / phone / online(在线渠道,不含电话) / all / 逗号清单(如 doordash,phone)。
+# 有效期文字里写了日期(如 8/31 或 2026-08-31)则到期次日自动从网站消失, 含当天;
+# 不写年份=今年, 跨年活动请写完整年份; 不含日期=纯展示、永不自动下架。
+# 领取方式: auto=票面显示"自动生效", manual="下单时请告知", select="结账时请选择";
+# 不写=不显示领取方式。
+# 文字标记通用: ~~旧价~~ 显示为划线, **新价** 显示为红色醒目
+DEAL_1: SPEND ~~$35~~ **$30**+ · 满 ~~$35~~ **$30** | FREE Egg Roll · 送春卷 | direct | select
+DEAL_2: SPEND ~~$55~~ **$50**+ · 满 ~~$55~~ **$50** | FREE Crab Rangoon · 送蟹角 | direct | select
+# 更多范围写法示例(去掉行首#即生效):
+# DEAL_3: SPEND $20+ · 满 $20 | FREE Wonton Soup · 送云吞汤 | phone | Valid through 8/31 · 有效期至 8/31
+# DEAL_4: SPEND $25+ · 满 $25 | FREE Soft Drink · 送汽水 | all
+# DEAL_5: SPEND $40+ · 满 $40 | FREE Fried Rice · 送炒饭 | doordash,phone
+# DEAL_6: SPEND $30+ · 满 $30 | FREE Spring Roll · 送春卷 | all | Valid through 8/31 · 有效期至 8/31 | auto
+# DEAL_7: SPEND $45+ · 满 $45 | 10% OFF · 九折 | phone | manual
+# 区标题(可改可留空用默认)
+DEAL_LABEL: 🎁 SPECIAL DEALS · 满额赠送（各票适用范围见票面标签）
+# 官网直订下的银行卡提醒(支付提示, 不随活动开关; 留空=隐藏)
+ORDER_DIRECT_CARD_NOTE: 💳 Paying with card? Please make sure your card is not locked · 如用银行卡支付，请确认卡片未被锁定
 ORDER_STRIP_LABEL: Order Online 在线订餐:
 
-ORDER_ONLINE: http://www.chinatownkitchenfonddulac.com
+ORDER_ONLINE: https://www.chinatownkitchenfonddulac.com
 ORDER_ONLINE_LABEL: Order Direct 官网直订
 # 官网直订按钮下方的小提示（留空则不显示）
 ORDER_ONLINE_NOTE: ⓘ Delivery depends on availability (may be unstable) — Pick-up recommended. For stable delivery, please call us at {PHONE} to request delivery, or place an order on any online platform: DoorDash, Uber Eats, Grubhub, Menufy or EatStreet. · 送餐视运力而定（可能不稳定），建议到店自取。如需稳定配送，请致电 {PHONE} 预约送餐，或通过任一平台下单：DoorDash、Uber Eats、Grubhub、Menufy 或 EatStreet。
@@ -170,7 +193,7 @@ ORDER_EATSTREET_STATUS: ON
 
 # ── 开门/打烊倒计时横幅 ────────────────────────────────────
 # 距开门或打烊不足 N 分钟时，网站顶部显示倒计时（改成 0 = 关闭此功能）
-COUNTDOWN_MINUTES: 60
+COUNTDOWN_MINUTES: 30
 # {MIN} 会自动替换成剩余分钟数
 COUNTDOWN_OPENING: ⏰ Opening soon — {MIN} min · 即将开门，还有 {MIN} 分钟
 COUNTDOWN_CLOSING: ⏰ Closing soon — {MIN} min · 即将打烊，还有 {MIN} 分钟
@@ -179,6 +202,17 @@ COUNTDOWN_CLOSED: Restaurant is currently closed — please come back during reg
 # 打烊提示右侧的"查看营业时间"链接（LINK留空=不显示链接）
 COUNTDOWN_CLOSED_LINK: index.html#hours
 COUNTDOWN_CLOSED_LINK_TEXT: Store Hours 查看营业时间 →
+
+# ── 午市/晚市横幅 ──
+# 午市时段(留空 = 不启用此功能)。快结束前 COUNTDOWN_MINUTES 分钟起, 横幅显示
+# 午市倒计时(与打烊倒计时同机制); 午市结束后显示"晚市"提示 DINNER_NOTE_MINUTES
+# 分钟(0=不提示)后自动隐藏; 打烊倒计时的优先级始终更高
+LUNCH_HOURS: 11:00 AM – 3:00 PM
+# 午市倒计时提前多少分钟开始(独立于打烊倒计时的 COUNTDOWN_MINUTES)
+LUNCH_COUNTDOWN_MINUTES: 60
+COUNTDOWN_LUNCH_END: 🍜 Lunch hours ending — {MIN} min · 午市即将结束，还有 {MIN} 分钟
+COUNTDOWN_DINNER: 🍽 Dinner hours
+DINNER_NOTE_MINUTES: 90
 
 # ── 打烊前截单时间（分钟）──────────────────────────────
 # 平台在打烊前 N 分钟停止接当日单 → 该按钮提前变黄灯◷（预订单仍可下）
