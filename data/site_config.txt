@@ -159,7 +159,7 @@ DEAL_2: SPEND $55+ · 满 $55 | FREE Crab Rangoon · 送蟹角 | direct | select
 # 区标题(可改可留空用默认)
 DEAL_LABEL: 🎁 SPECIAL DEALS · 满额赠送（各票适用范围见票面标签）
 # 官网直订下的银行卡提醒(支付提示, 不随活动开关; 留空=隐藏)
-ORDER_DIRECT_CARD_NOTE: 💳 Paying with card? Please make sure your card is not locked · 如用银行卡支付，请确认卡片未被锁定
+ORDER_DIRECT_CARD_NOTE: 💳 Paying with card? Please make sure your card is not locked to avoid delay of your order· 如用银行卡支付，请确认卡片未被锁定
 ORDER_STRIP_LABEL: Order Online 在线订餐:
 
 ORDER_ONLINE: https://www.chinatownkitchenfonddulac.com
