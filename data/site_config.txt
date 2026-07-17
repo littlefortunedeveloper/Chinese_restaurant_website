@@ -141,7 +141,8 @@ ORDER_PHONE_STATUS: ON
 DEALS_ENABLED: ON
 # 每行一条: 门槛 | 赠品 | 范围 | 有效期 | auto或manual (第3段起可省, 后两段顺序随意)。
 # 范围: direct / phone / online(在线渠道,不含电话) / all / 逗号清单(如 doordash,phone)。
-# 有效期文字里写了日期(如 8/31 或 2026-08-31)则到期次日自动从网站消失, 含当天;
+# 有效期文字里写了日期(如 8/31 或 2026-08-31)则最后有效日当天打烊时自动从网站
+# 消失(含当天营业时段; 该日休息则次日0点; 营业到凌晨的撑到实际打烊);
 # 不写年份=今年, 跨年活动请写完整年份; 不含日期=纯展示、永不自动下架。
 # 领取方式: auto=票面显示"自动生效", manual="下单时请告知", select="结账时请选择";
 # 不写=不显示领取方式。
@@ -159,7 +160,7 @@ DEAL_4: SPEND subtotal of ~~$55~~ **$35**+ · 满 ~~$55~~ **$35** | FREE Crab Ra
 # 区标题(可改可留空用默认)
 DEAL_LABEL: 🎁 SPECIAL DEALS · 满额赠送（各票适用范围见票面标签）
 # 官网直订下的银行卡提醒(支付提示, 不随活动开关; 留空=隐藏)
-ORDER_DIRECT_CARD_NOTE: 💳 Paying with card? Please make sure your card is not locked to avoid delay of your order· 如用银行卡支付，请确认卡片未被锁定
+ORDER_DIRECT_CARD_NOTE: 💳 Paying with card? Please make sure your card is not locked to avoid delay of your order · 如用银行卡支付，请确认卡片未被锁定，以免延误订单
 ORDER_STRIP_LABEL: Order Online 在线订餐:
 
 ORDER_ONLINE: https://www.chinatownkitchenfonddulac.com
@@ -195,7 +196,9 @@ ORDER_EATSTREET_STATUS: ON
 
 # ── 开门/打烊倒计时横幅 ────────────────────────────────────
 # 距开门或打烊不足 N 分钟时，网站顶部显示倒计时（改成 0 = 关闭此功能）
-COUNTDOWN_MINUTES: 30
+# 进度环总开关(留空或删除=开启; 写 OFF 关闭所有按钮的进度环)
+# ORDER_PROGRESS_RING: OFF
+COUNTDOWN_MINUTES: 60
 # {MIN} 会自动替换成剩余分钟数
 COUNTDOWN_OPENING: ⏰ Opening soon — {MIN} min · 即将开门，还有 {MIN} 分钟
 COUNTDOWN_CLOSING: ⏰ Closing soon — {MIN} min · 即将打烊，还有 {MIN} 分钟

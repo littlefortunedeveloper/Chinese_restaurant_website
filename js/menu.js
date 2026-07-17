@@ -72,7 +72,8 @@ function parseMenuData(text) {
 function parseAvailability(str) {
   const toMin = (h, m, ap) => (parseInt(h) % 12 + (/pm/i.test(ap) ? 12 : 0)) * 60 + parseInt(m);
   const seen = new Set(), times = [];
-  for (const m of String(str).matchAll(/(\d{1,2})[:：](\d{2})\s*(AM|PM)/gi)) {
+  const _re = /(\d{1,2})[:：](\d{2})\s*(AM|PM)/gi; let m;      // 不用 matchAll: Safari 13 前会抛错
+  while ((m = _re.exec(String(str)))) {
     const v = toMin(m[1], m[2], m[3]);
     if (!seen.has(v)) { seen.add(v); times.push(v); }
   }
@@ -132,10 +133,8 @@ function adjustPrice(priceStr, adj) {
 
 function applyAdjustToMenu(menu, adj) {
   if (!adj) return menu;
-  return menu.map(cat => ({
-    ...cat,
-    items: cat.items.map(it => ({
-      ...it,
+  return menu.map(cat => Object.assign({}, cat, {   // 不用对象展开: Safari 11.1 前语法报错
+    items: cat.items.map(it => Object.assign({}, it, {
       price: (typeof it.price === 'object')
         ? { sm: adjustPrice(it.price.sm, adj), lg: adjustPrice(it.price.lg, adj) }
         : adjustPrice(it.price, adj)
@@ -210,8 +209,9 @@ function renderMenu(menu) {
   // chip 点击滚动
   nav.querySelectorAll('.cat-chip').forEach(chip => {
     chip.addEventListener('click', () => {
-      document.getElementById(chip.dataset.target)
-        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const target = document.getElementById(chip.dataset.target);
+      if (target && target.scrollIntoView)                       // 不用可选链: Safari 13.1前语法报错
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   });
 

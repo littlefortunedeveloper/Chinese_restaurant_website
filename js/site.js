@@ -122,7 +122,10 @@ const ORDER_PLATFORMS = [
 /* ── 营业时间解析："11:00 AM – 9:30 PM" → 分钟区间；Closed/不可解析 → null ── */
 function parseTimeRange(str) {
   if (!str || /closed|休息/i.test(str)) return null;
-  const m = [...String(str).matchAll(/(\d{1,2}):(\d{2})\s*(AM|PM)/gi)];
+  const m = []; {                                              // 不用matchAll: Safari 13前抛错
+    const re = /(\d{1,2}):(\d{2})\s*(AM|PM)/gi; let mm;
+    while ((mm = re.exec(String(str)))) m.push(mm);
+  }
   if (m.length < 2) return null;
   const toMin = (h, mm, ap) => (parseInt(h) % 12 + (/pm/i.test(ap) ? 12 : 0)) * 60 + parseInt(mm);
   let apO = m[0][3], apC = m[1][3];
@@ -610,19 +613,23 @@ const DEAL_SCOPE_TAG = {            // 关键词范围: [文字, 前景, 底色,
 const DEAL_SCOPE_NAMES = { direct: '官网直订', phone: '电话订餐', doordash: 'DoorDash',
   ubereats: 'Uber Eats', grubhub: 'Grubhub', menufy: 'Menufy', eatstreet: 'EatStreet' };
 
-/* 有效期文字里最后一个可解析日期 = 到期日(含当天; 次日0点起该活动自动消失)。
-   认 2026-08-31 / 8/31(不写年=今年, 跨年活动请写完整年份); 解析不出日期 = 纯展示、
-   永不自动下架 */
-function dealExpiry(validText, now) {
+/* 有效期文字里最后一个可解析日期 = 最后有效日(含当天)。认 2026-08-31 / 8/31
+   (不写年=今年, 跨年活动请写完整年份); 解析不出日期 = 纯展示、永不自动下架 */
+function dealLastDate(validText, now) {
   const re = /(\d{4})-(\d{1,2})-(\d{1,2})|(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/g;
   let m, last = null;
   while ((m = re.exec(String(validText || '')))) {
     last = m[1] ? [+m[1], +m[2], +m[3]]
                 : [m[6] ? (+m[6] < 100 ? 2000 + +m[6] : +m[6]) : now.getFullYear(), +m[4], +m[5]];
   }
-  if (!last) return null;
-  const d = new Date(last[0], last[1] - 1, last[2] + 1);       // 含到期日 → 次日0点
-  return isNaN(d.getTime()) ? null : d;
+  return last && !isNaN(new Date(last[0], last[1] - 1, last[2]).getTime()) ? last : null;
+}
+/* 消失时刻 = 最后有效日当天的打烊时刻(今天截止 → 关门即下架); 该日休息则回退到
+   次日0点; 跨午夜营业(如营业到凌晨1点)撑到实际打烊 */
+function dealCloseMoment(cfg, last) {
+  const base = new Date(last[0], last[1] - 1, last[2], 12, 0);
+  const iv = hoursIntervals(cfg, base, 0, 0);
+  return iv.length ? iv[0][1] : new Date(last[0], last[1] - 1, last[2] + 1);
 }
 
 function parseDeals(cfg, now) {
@@ -639,9 +646,11 @@ function parseDeals(cfg, now) {
       if (/^(auto|manual|select)$/i.test(s)) apply = s.toLowerCase();
       else if (s) valid = s;
     }
-    const exp = dealExpiry(valid, now);
-    if (exp && now >= exp) continue;                 // 已过期 → 自动消失
-    out.push({ th: p[0], gift: p[1], scope: (p[2] || 'direct').toLowerCase(), valid, apply });
+    const last = dealLastDate(valid, now);
+    if (last && now >= dealCloseMoment(cfg, last)) continue;   // 最后有效日打烊后 → 自动消失
+    out.push({ th: p[0], gift: p[1], scope: (p[2] || 'direct').toLowerCase(), valid, apply,
+               endsToday: !!(last && now.getFullYear() === last[0] &&
+                             now.getMonth() === last[1] - 1 && now.getDate() === last[2]) });
   }
   return out;
 }
@@ -651,7 +660,7 @@ const DEAL_APPLY_TAG = {
   manual: ['Mention when ordering · 下单时请告知', '#9A6B00', '#FFF3D6', '#E0BC66'],
   select: ['Select at checkout · 结账时请选择', '#0C447C', '#E6F1FB', '#85B7EB']
 };
-function dealChips(scope, apply) {
+function dealChips(scope, apply, endsToday) {
   let t = DEAL_SCOPE_TAG[scope];
   if (!t) {                                          // 自定义清单: 代号映射成可读标签
     const names = String(scope).split(',').map(k => DEAL_SCOPE_NAMES[k.trim()] || escapeHtml(k.trim()));
@@ -660,6 +669,7 @@ function dealChips(scope, apply) {
   const a = DEAL_APPLY_TAG[apply];
   return `<div class="dt-scope"><span style="color:${t[1]};background:${t[2]};border-color:${t[3]}">${t[0]}</span>` +
          (a ? `<span style="color:${a[1]};background:${a[2]};border-color:${a[3]}">${a[0]}</span>` : '') +
+         (endsToday ? `<span style="color:#fff;background:#C0392B;border-color:#A93226">⏳ Ends today · 今日截止</span>` : '') +
          `</div>`;
 }
 
@@ -672,7 +682,7 @@ function buildDealsHtml(cfg, now) {
          `<div class="deal-strip">` + deals.map(d =>
            `<div class="deal-ticket"><span><div class="dt-th">${escMd(d.th)}</div>` +
            `<div class="dt-gift">${escMd(d.gift)}</div>` +
-           dealChips(d.scope, d.apply) +
+           dealChips(d.scope, d.apply, d.endsToday) +
            (d.valid ? `<div class="dt-valid">${escMd(d.valid)}</div>` : '') +
            `</span></div>`).join('') + `</div>`;
 }
@@ -887,7 +897,7 @@ function ready(fn) {
     setInterval(() => { renderCountdown(cfg); renderNotice(cfg); }, 15000);   // 每15秒刷新两条横幅
     window.addEventListener('resize', layoutBanners);   // 视口变化立即重排堆叠, 双横幅永不互相遮挡
     /* 浏览器标签页标题：根据 body 的 data-page 取对应配置 */
-    const page = document.body?.dataset?.page;
+    const page = (document.body && document.body.dataset) ? document.body.dataset.page : '';   // 不用?.: Safari 13.1前语法报错
     const key  = page === 'menu' ? 'PAGE_TITLE_MENU' : 'PAGE_TITLE_HOME';
     const base = cfg[key] || document.title.split('·')[0].trim();
     document.title = `${base}${cfg.NAME ? ' · ' + cfg.NAME : ''}${cfg.NAME_ZH ? ' ' + cfg.NAME_ZH : ''}`;
