@@ -590,6 +590,26 @@ const OG_CAR = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stro
   '<circle cx="7" cy="17" r="2.2"/><circle cx="17" cy="17" r="2.2"/>' +
   '<path d="M4.8 17H3v-5.5L5.2 7h8.3l3.6 4.5H21V17h-1.8"/><path d="M9.2 17h5.6"/><path d="M4 11.5h12.5"/></svg>';
 
+/* ── 组标签上方的十格进度隔断 ─────────────────────────────────────────────────
+   每枚矩形=10%, 支持部分点亮(格内左亮右淡的同色渐变, 0.1%精度)。
+   绿行=官网直订环的百分比, 蓝行=在线平台环(有环平台的均值)。
+   与进度环共用 orderPhaseProgress: 环总开关OFF→两行隐藏; 官网手动OFF→绿行隐藏;
+   手动OFF的平台不计入蓝行均值; 组隐藏时该行随组消失。 */
+const RECTROW_COL = { pick: ['rgba(46,125,70,.95)', 'rgba(46,125,70,.16)'],
+                      both: ['rgba(46,95,143,.95)', 'rgba(46,95,143,.16)'] };
+function buildGroupRectRow(kind, frac) {
+  if (frac === null || frac === undefined || !isFinite(frac)) return '';
+  const c = RECTROW_COL[kind];
+  if (!c) return '';
+  const cl = Math.max(0, Math.min(1, frac));
+  let s = `<div class="og-rectrow og-rectrow-${kind}" title="${Math.round(cl * 1000) / 10}%">`;
+  for (let i = 0; i < 10; i++) {
+    const fx = Math.round(Math.max(0, Math.min(1, cl * 10 - i)) * 1000) / 10;
+    s += `<span class="og-rect" style="background:linear-gradient(90deg,${c[0]} ${fx}%,${c[1]} ${fx}%)"></span>`;
+  }
+  return s + '</div>';
+}
+
 /* ── 满额赠送(SPECIAL DEALS) ─────────────────────────────────────────────────
    全部由 site_config.txt 驱动, 改活动零代码:
    · DEALS_ENABLED: ON               总开关(仅明确 ON/YES/TRUE/开/1 生效; 其余=全部隐藏)
@@ -721,10 +741,24 @@ function buildGroupedOrderHtml(cfg) {
   /* 官网直订下的银行卡提醒(支付提示, 独立于满赠总开关; 留空=隐藏) */
   const cardNote = String(cfg.ORDER_DIRECT_CARD_NOTE || '').trim()
     ? `<p class="card-note">${escMd(cfg.ORDER_DIRECT_CARD_NOTE.trim())}</p>` : '';
+  /* 十格进度隔断的两个数据源 */
+  const isOff = k => /^(OFF|NO|FALSE|关|0)$/i.test(String(cfg[k + '_STATUS'] || 'ON').trim());
+  const nowR = restaurantNow(cfg);
+  const rD = isOff('ORDER_ONLINE') ? null : orderPhaseProgress('ORDER_ONLINE', cfg, nowR);
+  let tpSum = 0, tpN = 0;
+  for (const p of ORDER_PLATFORMS) {
+    if (p[0] === 'ORDER_ONLINE' || isOff(p[0])) continue;
+    const r = orderPhaseProgress(p[0], cfg, nowR);
+    if (r) { tpSum += r.frac; tpN++; }
+  }
+  const rowPick = g1 ? buildGroupRectRow('pick', rD ? rD.frac : null) : '';
+  const rowBoth = g2 ? buildGroupRectRow('both', tpN ? tpSum / tpN : null) : '';
   return buildDealsHtml(cfg)
+       + rowPick
        + seg(g1, OG_BAG, 'ORDER_GROUP_PICKUP_LABEL', 'RECOMMENDED FOR PICK-UP · 自取推荐',
              'og-pick', cardNote, 'ORDER_GROUP_PICKUP_NOTE',
              'Delivery on Order Direct depends on our own driver availability · 官网直订的外送视本店司机运力而定', 'og-n1')
+       + rowBoth
        + seg(g2, OG_BAG + OG_CAR, 'ORDER_GROUP_BOTH_LABEL', 'RECOMMENDED FOR PICK-UP & DELIVERY · 自取 & 外送推荐',
              'og-both', '', 'ORDER_GROUP_BOTH_NOTE',
              'Delivery for these options — including phone orders — is fulfilled by online platform drivers: more drivers, more stable · 以上渠道的外送（含电话订餐）均由外送平台司机配送，司机更多、更稳定', 'og-n2');
@@ -911,5 +945,5 @@ function ready(fn) {
 
 /* 供 Node 测试使用（浏览器中此段无副作用）*/
 if (typeof module !== 'undefined') {
-  module.exports = { parseConfig, resolveConfig, resolveStr, parsePopup, buildPopupHtml, popupKey, buildOrderButtons, buildStatusLegend, parseTimeRange, isRestaurantOpen, minutesToClose, platformStatus, getCountdown, ORDER_PLATFORMS, parseAnnouncements, escapeHtml, orderPhaseProgress, fitOrderRings, restaurantNow, closureInfo, parseClosure, hoursIntervals, noticeInfo, buildOrderBtn, buildPhoneBtn, buildGroupedOrderHtml, statusMix, parseDeals, buildDealsHtml };
+  module.exports = { parseConfig, resolveConfig, resolveStr, parsePopup, buildPopupHtml, popupKey, buildOrderButtons, buildStatusLegend, parseTimeRange, isRestaurantOpen, minutesToClose, platformStatus, getCountdown, ORDER_PLATFORMS, parseAnnouncements, escapeHtml, orderPhaseProgress, fitOrderRings, restaurantNow, closureInfo, parseClosure, hoursIntervals, noticeInfo, buildOrderBtn, buildPhoneBtn, buildGroupedOrderHtml, statusMix, parseDeals, buildDealsHtml, buildGroupRectRow };
 }

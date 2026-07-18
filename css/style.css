@@ -814,3 +814,8 @@ body.cd-on { padding-top: var(--cd-h, 0px); }
 .deal-ticket .dt-valid { font-size: 10.5px; color: #8A7A55; margin-top: 3px; letter-spacing: .03em; font-weight: 400; }
 .deal-ticket .dt-valid .dt-new { font-size: 1em; font-weight: 800; }
 .card-note { text-align: center; font-size: 12px; color: #8E2323; margin: 4px 0 10px; }
+
+
+/* ── 组标签上方的十格进度隔断（js/site.js buildGroupRectRow; 每枚=10%, 部分点亮）── */
+.og-rectrow { display: flex; gap: 6px; justify-content: center; align-items: center; margin: 2px auto 10px; }
+.og-rectrow .og-rect { width: 22px; height: 6px; border-radius: 2px; }
