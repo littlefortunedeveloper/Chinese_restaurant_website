@@ -256,7 +256,7 @@ MENU_PRICE_NOTICE: ⓘ Prices shown are our RESTAURANT prices (dine-in & pick-up
 MENU_LEGEND: ◆ 辣 Hot Picante = Spicy (adjustable 辣度可调) · 小 sm/peq. = Small · 大 lg/grd. = Large · Prices subject to change 价格可能变动
 MENU_LOADING: Loading menu… 菜单加载中…
 # 搜索栏文字
-MENU_SEARCH_PLACEHOLDER: 🔍 Search menu 搜索菜品 — name / number / 中文 / español
+MENU_SEARCH_PLACEHOLDER: 🔍 Search menu 搜索菜品 — 可组合词 e.g. chicken broccoli lunch / 编号 / 中文 / español
 MENU_SEARCH_NORESULT: No dishes found — try another keyword · 没有找到相关菜品，换个关键词试试
 MENU_SEARCH_COUNT: Found {COUNT} dishes · 找到 {COUNT} 道菜
 # 辣度筛选按钮

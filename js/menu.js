@@ -145,6 +145,26 @@ function applyAdjustToMenu(menu, adj) {
 /* ── 单个菜品的小工具 ─────────────────────────────────────────────────────── */
 const SPICY_TAG = '[SPICY]';
 let CFG = {};   // 网站文字配置（由 initMenu 从 site_config.txt 载入）
+/* ── 搜索匹配器: 分词AND + 归一化 ────────────────────────────────────────────
+   norm: 小写、点/逗号/撇号折叠为空格、with→w(与菜名缩写 w. 等价)、空白折叠。
+   match: 查询按空格分词, 每个词都是干草堆子串才算命中(顺序无关)。
+   干草堆=编号+英文名+中文+西文+分类名, 因此 "chicken with broccoli lunch special"
+   可命中 Lunch Specials 分类下的 Chicken w. Broccoli。 */
+function menuSearchNorm(s) {
+  return String(s).toLowerCase()
+    .replace(/[.,'’]/g, ' ')
+    .replace(/\bwith\b/g, 'w')
+    .replace(/\bcombos?\b/g, 'combination')
+    .replace(/\s+/g, ' ').trim();
+}
+function menuSearchMatch(hay, q) {
+  const h = menuSearchNorm(hay);
+  const tokens = menuSearchNorm(q).split(' ').filter(Boolean);
+  if (!tokens.length) return true;
+  for (const t of tokens) if (h.indexOf(t) === -1) return false;
+  return true;
+}
+
 let refreshFilter = null;   // 搜索/筛选的刷新函数（initSearch 赋值；供应时段变化时调用以重算结果）
 function splitNum(en) {
   // 提取编号："16. Hot & Sour Soup" → ["16.", "Hot & Sour Soup"]（与 Python 正则一致）
@@ -183,7 +203,7 @@ function renderMenu(menu) {
         ? `<span class="sz">${szS} <b>$${esc(it.price.sm)}</b></span>
            <span class="sz">${szL} <b>$${esc(it.price.lg)}</b></span>`
         : `$${esc(it.price)}`;
-      const searchStr = `${num} ${name} ${it.zh} ${esClean}`.toLowerCase();
+      const searchStr = menuSearchNorm(`${num} ${name} ${it.zh} ${esClean} ${cat.name}`);   // 含分类名, 支持 "lunch special" 类词
       return `
         <article class="menu-item" data-search="${esc(searchStr)}" data-spicy="${spicy ? 1 : 0}">
           <div class="mi-num">${esc(num)}</div>
@@ -322,10 +342,10 @@ function initSearch() {
     if (catNav)   catNav.style.display   = 'none';    // 筛选中隐藏分类导航
     let total = 0;
     sections.forEach(sec => {
-      if (sec.classList.contains('cat-unavailable')) return;  // 不在供应时段的分类：不参与筛选与计数
+      const gated = sec.classList.contains('cat-unavailable');  // 限时分类: 明确搜索时也可被找到
       let n = 0;
       sec.querySelectorAll('.menu-item').forEach(item => {
-        const okText  = !q || (item.dataset.search || '').includes(q);
+        const okText  = !q || menuSearchMatch(item.dataset.search || '', q);
         const isSpicy = item.dataset.spicy === '1';
         const okSpicy = spicyFilter === 'all' ||
                         (spicyFilter === 'spicy' &&  isSpicy) ||
@@ -334,7 +354,7 @@ function initSearch() {
         item.style.display = hit ? '' : 'none';
         if (hit) n++;
       });
-      sec.style.display = n ? '' : 'none';
+      sec.style.display = n ? (gated ? 'block' : '') : 'none';   // 命中的限时分类强制显示(内联压过类隐藏); 清空搜索后恢复时段规则
       total += n;
     });
     if (countEl) {
@@ -393,5 +413,5 @@ if (typeof document !== 'undefined') {
 
 /* 供 Node 测试使用 */
 if (typeof module !== 'undefined') {
-  module.exports = { parseMenuData, adjustPrice, applyAdjustToMenu, splitNum, parseAvailability, isAvailableNow, tzNow };
+  module.exports = { parseMenuData, adjustPrice, applyAdjustToMenu, splitNum, parseAvailability, isAvailableNow, tzNow, menuSearchNorm, menuSearchMatch };
 }
