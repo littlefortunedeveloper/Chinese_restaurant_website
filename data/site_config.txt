@@ -46,7 +46,7 @@ CLOSURE_ENABLED: ON
 # 只填 ON 或不含日期的文字 = 立即无限期歇业(删空才恢复)。整行文字原样显示在顶部横幅。
 # 歇业期间: 官网直订红色不可点; 第三方平台保持蓝色"打烊中·可预订"仍可点;
 # 进度环用整段歇业时长从0%匀速回充, 重新开门瞬间恰好100%; 菜单/公告照常可浏览
-CLOSURE: 2026-08-10 to 2026-08-20 休假 · Closed for Break, back 8/21
+CLOSURE: Our hard working team are taking a well deserved break on 2026-08-10 to 2026-08-20 休假 · Closed for Break, back 8/21
 
 # 预告横幅: 歇业开始前几天起, 页面顶部出现一条独立的琥珀色"预告"横幅(与红色打烊
 # 横幅是两条分开的横幅, 可同时叠放); 进入歇业期后由它显示 CLOSURE 原文
