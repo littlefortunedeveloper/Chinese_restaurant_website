@@ -1,0 +1,21 @@
+/* 搜索匹配器回归 · node tests/test_search.js */
+const path = require('path');
+const m = require(path.join(__dirname, '..', 'js/menu.js'));
+let p=0,f=0;
+const t=(n,got,want)=>{ const ok=JSON.stringify(got)===JSON.stringify(want);
+  ok?p++:f++; console.log(` ${ok?'✓':'✗'} ${n}${ok?'':' got='+JSON.stringify(got)}`); };
+const HAY = '12 chicken w. broccoli 芥兰鸡 pollo con brócoli Lunch Specials 午市特餐';
+t('原例1: chicken with broccoli lunch special', m.menuSearchMatch(HAY,'chicken with broccoli lunch special'), true);
+t('原例2: chicken with fried rice', m.menuSearchMatch('27 chicken fried rice 鸡炒饭 arroz frito fried rice 炒饭','chicken with fried rice'), true);
+t('with/w停用', [m.menuSearchMatch(HAY,'chicken w broccoli'), m.menuSearchMatch('kung pao chicken with peanuts','w peanuts')], [true,true]);
+t('and停用: sweet and sour ↔ &', m.menuSearchMatch('sweet & sour chicken 甜酸鸡','sweet and sour chicken'), true);
+t('纯停用词=不过滤', m.menuSearchMatch(HAY,'with w and'), true);
+t('分类词单复数宽容', m.menuSearchMatch(HAY,'lunch special'), true);
+t('顺序无关', m.menuSearchMatch(HAY,'lunch broccoli chicken'), true);
+t('编号', m.menuSearchMatch(HAY,'12'), true);
+t('中文与混搭', [m.menuSearchMatch(HAY,'芥兰鸡'), m.menuSearchMatch(HAY,'午市 chicken')], [true,true]);
+t('大小写/点号无关', m.menuSearchMatch(HAY,'CHICKEN W. BROCCOLI'), true);
+t('AND精确性', m.menuSearchMatch(HAY,'chicken beef'), false);
+t('空查询=全命中', m.menuSearchMatch(HAY,'   '), true);
+t('combo≡combination', [m.menuSearchMatch('shrimp special combination plates 特价套餐','combo shrimp'), m.menuSearchMatch('special combination plates','combos')], [true,true]);
+console.log(`结果: ${p} 通过, ${f} 失败`); process.exit(f?1:0);

@@ -91,9 +91,32 @@ function parseAnnouncements(text) {
   return out;
 }
 
-function renderAnnouncements(list) {
+let ANN_LIST = [];                                   // 公告缓存(启动时解析一次)
+
+/* 休假便签联动: CLOSURE_ENABLED 为 ON 时自动生成一条置顶公告(内容=CLOSURE 原文,
+   日期签=休假区间), 恢复营业时刻起自动消失; CLOSURE_ANN: OFF 可关掉联动 */
+function closureAnnouncement(cfg, now) {
+  if (!/^(ON|YES|TRUE|开|1)$/i.test(String(cfg.CLOSURE_ENABLED || '').trim())) return null;
+  if (/^(OFF|NO|FALSE|关|0)$/i.test(String(cfg.CLOSURE_ANN || '').trim())) return null;
+  const raw = String(cfg.CLOSURE || '').trim();
+  if (!raw) return null;
+  const P = parseClosure(cfg);
+  now = now || restaurantNow(cfg);
+  if (P && P.end && now >= P.end) return null;       // 休假结束 → 便签自动消失
+  const f = d => (d.getMonth() + 1) + '/' + d.getDate();
+  let chip = '';
+  if (P && P.start && P.end) {
+    const last = new Date(P.end.getTime() - 12 * 3600 * 1000);   // 恢复时刻回退≈最后休假日
+    chip = f(P.start) + (f(last) !== f(P.start) ? ' – ' + f(last) : '');
+  }
+  return { date: chip, title: cfg.CLOSURE_ANN_TITLE || '🌴 Holiday Notice 休假通知', text: raw };
+}
+
+function renderAnnouncements(cfg) {
   const box = document.getElementById('announcements');
   if (!box) return;
+  const syn = closureAnnouncement(cfg);
+  const list = syn ? [syn].concat(ANN_LIST) : ANN_LIST;
   if (!list.length) { box.innerHTML = ''; return; }
   box.innerHTML = list.map(a => `
     <div class="ann-item">
@@ -339,8 +362,19 @@ function parseClosure(cfg, now) {                    // 纯解析: null | {msg[,
   if (!v || /^(OFF|NO|FALSE|关|0)$/i.test(v)) return null;
   const msg = /^(ON|YES|TRUE|开|1)$/i.test(v) ? 'Temporarily closed 暂停营业中' : v;
   const ds = [];
-  const re = /(\d{4})-(\d{1,2})-(\d{1,2})|(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/g;
-  let m; while ((m = re.exec(v)) && ds.length < 2) {
+  /* 优先识别成对的"日期 连接词 日期"——范围写法前后可放任意文字, 前方落单的
+     日期(如 "Reopen 8/21! Closed 8/10 to 8/20")不再劫持区间 */
+  const DPAT = '(?:\\d{4}[-/]\\d{1,2}[-/]\\d{1,2}|\\d{1,2}\\/\\d{1,2}(?:\\/\\d{2,4})?)';
+  const tokDate = t => {
+    let k = /^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/.exec(t);
+    if (k) return [+k[1], +k[2], +k[3]];
+    k = /^(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?$/.exec(t);
+    return [k[3] ? (+k[3] < 100 ? 2000 + +k[3] : +k[3]) : null, +k[1], +k[2]];
+  };
+  const pm = new RegExp('(' + DPAT + ')\\s*(?:to|[\\-\u2013\u2014~]|到)\\s*(' + DPAT + ')', 'i').exec(v);
+  if (pm) { ds.push(tokDate(pm[1]), tokDate(pm[2])); }
+  const re = /(\d{4})[-/](\d{1,2})[-/](\d{1,2})|(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/g;
+  let m; while (!ds.length && (m = re.exec(v)) && ds.length < 2) {
     if (m[1]) ds.push([+m[1], +m[2], +m[3]]);
     else ds.push([m[6] ? (+m[6] < 100 ? 2000 + +m[6] : +m[6]) : null, +m[4], +m[5]]);
   }
@@ -597,12 +631,24 @@ const OG_CAR = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stro
    手动OFF的平台不计入蓝行均值; 组隐藏时该行随组消失。 */
 const RECTROW_COL = { pick: ['rgba(46,125,70,.95)', 'rgba(46,125,70,.16)'],
                       both: ['rgba(46,95,143,.95)', 'rgba(46,95,143,.16)'] };
-function buildGroupRectRow(kind, frac) {
+/* 打烊后的充电闪电(SVG三层: 描形底 + 由下而上充能填充 + 电流闪烁光晕) */
+function boltSvg(kind) {
+  const cid = 'boltclip-' + kind;
+  return `<span class="og-bolt" title="Recharging · 回充中">` +
+    `<svg viewBox="0 0 12 16" aria-hidden="true">` +
+    `<defs><clipPath id="${cid}"><path d="M7 0 L1 9 L5 9 L4 16 L11 6 L6.6 6 Z"/></clipPath></defs>` +
+    `<path class="bolt-base" d="M7 0 L1 9 L5 9 L4 16 L11 6 L6.6 6 Z"/>` +
+    `<g clip-path="url(#${cid})"><rect class="bolt-fill" x="0" y="0" width="12" height="16"/></g>` +
+    `</svg></span>`;
+}
+
+function buildGroupRectRow(kind, frac, bolt) {
   if (frac === null || frac === undefined || !isFinite(frac)) return '';
   const c = RECTROW_COL[kind];
   if (!c) return '';
   const cl = Math.max(0, Math.min(1, frac));
-  let s = `<div class="og-rectrow og-rectrow-${kind}" title="${Math.round(cl * 1000) / 10}%">`;
+  let s = `<div class="og-rectrow og-rectrow-${kind}" title="${Math.round(cl * 1000) / 10}%">` +
+          (bolt ? boltSvg(kind) : '');
   for (let i = 0; i < 10; i++) {
     const fx = Math.round(Math.max(0, Math.min(1, cl * 10 - i)) * 1000) / 10;
     s += `<span class="og-rect" style="background:linear-gradient(90deg,${c[0]} ${fx}%,${c[1]} ${fx}%)"></span>`;
@@ -636,7 +682,7 @@ const DEAL_SCOPE_NAMES = { direct: '官网直订', phone: '电话订餐', doorda
 /* 有效期文字里最后一个可解析日期 = 最后有效日(含当天)。认 2026-08-31 / 8/31
    (不写年=今年, 跨年活动请写完整年份); 解析不出日期 = 纯展示、永不自动下架 */
 function dealLastDate(validText, now) {
-  const re = /(\d{4})-(\d{1,2})-(\d{1,2})|(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/g;
+  const re = /(\d{4})[-/](\d{1,2})[-/](\d{1,2})|(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/g;
   let m, last = null;
   while ((m = re.exec(String(validText || '')))) {
     last = m[1] ? [+m[1], +m[2], +m[3]]
@@ -713,7 +759,7 @@ function buildDealsHtml(cfg, now) {
    · 组标签: ORDER_GROUP_PICKUP_LABEL / ORDER_GROUP_BOTH_LABEL
    · 组说明: ORDER_GROUP_PICKUP_NOTE / ORDER_GROUP_BOTH_NOTE(留空=不显示该行)
    · 某组一个按钮都没有时, 该组连标签带说明整体隐藏 */
-function buildGroupedOrderHtml(cfg) {
+function buildGroupedOrderHtml(cfg, now) {
   const mins = minutesToClose(cfg);
   const groupOf = key => {
     const v = String(cfg[key + '_GROUP'] || '').trim().toLowerCase();
@@ -743,17 +789,21 @@ function buildGroupedOrderHtml(cfg) {
     ? `<p class="card-note">${escMd(cfg.ORDER_DIRECT_CARD_NOTE.trim())}</p>` : '';
   /* 十格进度隔断的两个数据源 */
   const isOff = k => /^(OFF|NO|FALSE|关|0)$/i.test(String(cfg[k + '_STATUS'] || 'ON').trim());
-  const nowR = restaurantNow(cfg);
+  const nowR = now || restaurantNow(cfg);
   const rD = isOff('ORDER_ONLINE') ? null : orderPhaseProgress('ORDER_ONLINE', cfg, nowR);
-  let tpSum = 0, tpN = 0;
+  let tpSum = 0, tpN = 0, tpRecharge = 0;
   for (const p of ORDER_PLATFORMS) {
     if (p[0] === 'ORDER_ONLINE' || isOff(p[0])) continue;
     const r = orderPhaseProgress(p[0], cfg, nowR);
-    if (r) { tpSum += r.frac; tpN++; }
+    if (r) { tpSum += r.frac; tpN++; if (r.to === 'open') tpRecharge++; }
   }
-  const rowPick = g1 ? buildGroupRectRow('pick', rD ? rD.frac : null) : '';
-  const rowBoth = g2 ? buildGroupRectRow('both', tpN ? tpSum / tpN : null) : '';
-  return buildDealsHtml(cfg)
+  /* 充电闪电: 回充相位亮起(打烊后/歇业日/休假期); ORDER_BOLT: OFF 可关 */
+  const boltOn = !/^(OFF|NO|FALSE|关|0)$/i.test(String(cfg.ORDER_BOLT || 'ON').trim());
+  const boltPick = boltOn && !!(rD && rD.to === 'open');
+  const boltBoth = boltOn && tpN > 0 && tpRecharge === tpN;
+  const rowPick = g1 ? buildGroupRectRow('pick', rD ? rD.frac : null, boltPick) : '';
+  const rowBoth = g2 ? buildGroupRectRow('both', tpN ? tpSum / tpN : null, boltBoth) : '';
+  return buildDealsHtml(cfg, nowR)
        + rowPick
        + seg(g1, OG_BAG, 'ORDER_GROUP_PICKUP_LABEL', 'RECOMMENDED FOR PICK-UP · 自取推荐',
              'og-pick', cardNote, 'ORDER_GROUP_PICKUP_NOTE',
@@ -937,7 +987,8 @@ function ready(fn) {
     document.title = `${base}${cfg.NAME ? ' · ' + cfg.NAME : ''}${cfg.NAME_ZH ? ' ' + cfg.NAME_ZH : ''}`;
     try {
       const annText = await fetchText('data/announcements.txt');
-      renderAnnouncements(parseAnnouncements(annText));
+      ANN_LIST = parseAnnouncements(annText);
+      renderAnnouncements(cfg);
     } catch (e) { console.warn('公告加载失败：', e.message); }
     initPopup(cfg);                                        // 弹窗（由popup.txt控制开关）
   });
@@ -945,5 +996,5 @@ function ready(fn) {
 
 /* 供 Node 测试使用（浏览器中此段无副作用）*/
 if (typeof module !== 'undefined') {
-  module.exports = { parseConfig, resolveConfig, resolveStr, parsePopup, buildPopupHtml, popupKey, buildOrderButtons, buildStatusLegend, parseTimeRange, isRestaurantOpen, minutesToClose, platformStatus, getCountdown, ORDER_PLATFORMS, parseAnnouncements, escapeHtml, orderPhaseProgress, fitOrderRings, restaurantNow, closureInfo, parseClosure, hoursIntervals, noticeInfo, buildOrderBtn, buildPhoneBtn, buildGroupedOrderHtml, statusMix, parseDeals, buildDealsHtml, buildGroupRectRow };
+  module.exports = { parseConfig, resolveConfig, resolveStr, parsePopup, buildPopupHtml, popupKey, buildOrderButtons, buildStatusLegend, parseTimeRange, isRestaurantOpen, minutesToClose, platformStatus, getCountdown, ORDER_PLATFORMS, parseAnnouncements, escapeHtml, orderPhaseProgress, fitOrderRings, restaurantNow, closureInfo, parseClosure, hoursIntervals, noticeInfo, buildOrderBtn, buildPhoneBtn, buildGroupedOrderHtml, statusMix, parseDeals, buildDealsHtml, buildGroupRectRow, closureAnnouncement };
 }
