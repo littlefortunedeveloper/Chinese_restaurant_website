@@ -153,13 +153,17 @@ let CFG = {};   // 网站文字配置（由 initMenu 从 site_config.txt 载入�
 function menuSearchNorm(s) {
   return String(s).toLowerCase()
     .replace(/[.,'’]/g, ' ')
-    .replace(/\bwith\b/g, 'w')
     .replace(/\bcombos?\b/g, 'combination')
     .replace(/\s+/g, ' ').trim();
 }
+/* 停用词: 询问里的 with / w / and 自动忽略(几乎无区分度), 因此
+   "chicken with fried rice" 命中 Chicken Fried Rice,
+   "chicken with broccoli" 命中 Chicken w. Broccoli,
+   "sweet and sour" 命中 Sweet & Sour */
+const MENU_SEARCH_STOP = { 'with': 1, 'w': 1, 'and': 1 };
 function menuSearchMatch(hay, q) {
   const h = menuSearchNorm(hay);
-  const tokens = menuSearchNorm(q).split(' ').filter(Boolean);
+  const tokens = menuSearchNorm(q).split(' ').filter(t => t && !MENU_SEARCH_STOP[t]);
   if (!tokens.length) return true;
   for (const t of tokens) if (h.indexOf(t) === -1) return false;
   return true;

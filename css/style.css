@@ -182,23 +182,38 @@ a:hover { color: var(--red-600); }
 /* ══════════════════════════════════════════════════════════════════════════
    公告条
    ══════════════════════════════════════════════════════════════════════════ */
-.announcements { background: var(--paper); border-bottom: 1px solid var(--line); }
+/* 便利贴风格: 黄/粉/绿三色轮换、随机微斜、顶部胶带、右下折角、悬停摆正浮起;
+   标题/日期用手写字体(Caveat+龙藏, 由 index.html 引入, 离线时优雅回退系统字体) */
+.announcements { background: transparent; border-bottom: none; display: flex;
+  flex-wrap: wrap; gap: 20px; justify-content: center; padding: 26px 16px 14px; }
 .announcements:empty { display: none; }
-.ann-item {
-  max-width: var(--maxw); margin: 0 auto; padding: 15px 24px;
-  display: flex; gap: 14px; align-items: flex-start;
-}
-.ann-item + .ann-item { border-top: 1px dashed var(--line); }
-.ann-icon {
-  flex: 0 0 auto; width: 34px; height: 34px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--gold-300), var(--gold-500));
-  display: grid; place-items: center; font-size: 16px;
-  box-shadow: var(--shadow-sm);
-}
-.ann-body { flex: 1; }
-.ann-title { font-weight: 700; color: var(--red-800); font-size: 15px; }
-.ann-date { color: var(--ink-500); font-size: 12.5px; margin-left: 8px; font-weight: 500; }
-.ann-text { color: var(--ink-700); font-size: 14px; margin-top: 2px; }
+.ann-item { flex: 0 1 340px; max-width: 380px; padding: 30px 20px 18px;
+  position: relative; border-radius: 2px;
+  background: linear-gradient(180deg, #FFF6BF, #FBE788);
+  box-shadow: 0 10px 22px rgba(60,30,10,.26), 0 2px 5px rgba(60,30,10,.16);
+  transform: rotate(-1.6deg); transition: transform .25s ease, box-shadow .25s ease; }
+.ann-item:nth-child(2n) { transform: rotate(1.3deg);
+  background: linear-gradient(180deg, #FFE9F0, #F7CBDA); }
+.ann-item:nth-child(3n) { transform: rotate(-.7deg);
+  background: linear-gradient(180deg, #E6F7EA, #C9EAD3); }
+.ann-item:hover { transform: rotate(0) translateY(-4px) scale(1.02);
+  box-shadow: 0 16px 30px rgba(60,30,10,.32); z-index: 2; }
+.ann-item::before { content: ''; position: absolute; top: -11px; left: 50%;
+  transform: translateX(-50%) rotate(-3deg); width: 96px; height: 26px;
+  background: rgba(255,255,255,.55);
+  border-left: 1px dashed rgba(0,0,0,.07); border-right: 1px dashed rgba(0,0,0,.07);
+  box-shadow: 0 2px 4px rgba(60,30,10,.15); }
+.ann-item::after { content: ''; position: absolute; right: 0; bottom: 0;
+  border-style: solid; border-width: 0 0 20px 20px;
+  border-color: transparent transparent rgba(60,30,10,.12) transparent; }
+.ann-icon { font-size: 17px; line-height: 1; margin-top: 1px; float: left; margin-right: 8px; }
+.ann-title { font-family: 'Caveat', 'Long Cang', "Segoe Print", "Bradley Hand", cursive;
+  font-weight: 700; font-size: 23px; line-height: 1.15; color: #7A2E12; letter-spacing: .3px; }
+.ann-date { display: inline-block; background: rgba(122,46,18,.10); color: #7A4A2A;
+  font-family: 'Caveat', 'Long Cang', cursive; font-weight: 600;
+  padding: 1px 9px; border-radius: 10px; font-size: 14.5px; margin-left: 8px; vertical-align: 3px; }
+.ann-text { font-family: 'Kalam', 'Long Cang', "Segoe Print", cursive;
+  color: #4A3320; font-size: 16.5px; line-height: 1.6; margin-top: 7px; }
 
 /* ══════════════════════════════════════════════════════════════════════════
    通用区块
@@ -819,3 +834,18 @@ body.cd-on { padding-top: var(--cd-h, 0px); }
 /* ── 组标签上方的十格进度隔断（js/site.js buildGroupRectRow; 每枚=10%, 部分点亮）── */
 .og-rectrow { display: flex; gap: 6px; justify-content: center; align-items: center; margin: 2px auto 10px; }
 .og-rectrow .og-rect { width: 22px; height: 6px; border-radius: 2px; }
+
+
+/* ── 打烊充电闪电（js/site.js boltSvg; 回充相位时亮在十格进度前）──
+   老浏览器不支持SVG子元素CSS动画时优雅降级为静态金色闪电 */
+.og-bolt { display: inline-flex; align-items: center; margin-right: 3px; line-height: 0; }
+.og-bolt svg { width: 12px; height: 16px; overflow: visible;
+  animation: boltFlicker 2.8s steps(1, end) infinite; }
+.og-bolt .bolt-base { fill: rgba(255,180,0,.22); stroke: rgba(200,140,0,.5); stroke-width: .6; }
+.og-bolt .bolt-fill { fill: #FFC61A; animation: boltCharge 2s ease-in-out infinite; }
+@keyframes boltCharge { 0% { transform: translateY(16px); } 70% { transform: translateY(0); } 100% { transform: translateY(0); } }
+@keyframes boltFlicker { 0% { filter: drop-shadow(0 0 2px rgba(255,190,0,.35)); }
+  6% { filter: drop-shadow(0 0 6px rgba(255,210,60,.95)); }
+  9% { filter: drop-shadow(0 0 2px rgba(255,190,0,.35)); }
+  13% { filter: drop-shadow(0 0 7px rgba(255,220,80,1)); }
+  18%, 100% { filter: drop-shadow(0 0 3px rgba(255,190,0,.45)); } }

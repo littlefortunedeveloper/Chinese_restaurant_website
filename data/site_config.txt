@@ -5,6 +5,74 @@
 # 格式：KEY: 值    （# 开头是注释；冒号后面的整段都是值）
 # ==============================================================================
 
+# ╔════════════════════════════════════════════════════════════════════╗
+# ║  ⚡ 常用控制台 · QUICK CONTROLS —— 日常运营只需要改这一区           ║
+# ║  (放假开关 / 满额赠送 / 倒计时提前量 / 显示开关)                    ║
+# ╚════════════════════════════════════════════════════════════════════╝
+
+# ── 临时歇业/放假总闸(双钥匙) ──
+# 第一把钥匙: 下面这行拨到 ON, CLOSURE 里的日期/文字才会奏效;
+# OFF(或留空/删掉) = 一切照常营业, 哪怕日期还填着——放假回来只需拨回 OFF,
+# 日期可以留着当模板, 明年改个日期再拨 ON
+# 日期写法支持: 2026-08-10 / 2026/8/10 / 8/10(不写年=今年); 范围连接 to、-、–、~、到 均可;
+# 单日写一个日期; 只写文字不写日期 = 无限期歇业(需手动关)。
+# 注意: 英文月名(Aug 10)与中文日期(8月10日)不被识别、会当成无限期歇业, 请用数字日期
+CLOSURE_ENABLED: OFF
+
+# 休假便签联动: 上面开关为 ON 时, 公告区自动置顶一张休假便签(内容=CLOSURE 原文,
+# 日期签=休假区间), 恢复营业后自动消失。不想联动写 CLOSURE_ANN: OFF;
+# 便签标题可改: CLOSURE_ANN_TITLE: 🌴 Holiday Notice 休假通知
+
+# 第二把钥匙: 歇业内容。推荐写日期区间(含首尾两天), 到点自动歇业、过期自动恢复:
+#   CLOSURE: 2026-07-13 to 2026-07-19 春节休假 · Closed for Holiday, back 7/20
+# 也认美式 7/13 - 7/19(不写年=今年, 跨年如 12/28 - 1/3 自动进位); 只写一个日期=只关那天;
+# 只填 ON 或不含日期的文字 = 立即无限期歇业(删空才恢复)。整行文字原样显示在顶部横幅。
+# 歇业期间: 官网直订红色不可点; 第三方平台保持蓝色"打烊中·可预订"仍可点;
+# 进度环用整段歇业时长从0%匀速回充, 重新开门瞬间恰好100%; 菜单/公告照常可浏览
+CLOSURE:
+
+# 预告横幅: 歇业开始前几天起, 页面顶部出现一条独立的琥珀色"预告"横幅(与红色打烊
+# 横幅是两条分开的横幅, 可同时叠放); 进入歇业期后由它显示 CLOSURE 原文
+CLOSURE_NOTICE_DAYS: 14
+CLOSURE_NOTICE_PREFIX: 📢 Advance Notice 提前通知 —
+
+# ── 满额赠送(SPECIAL DEALS) ──
+# 总开关: 仅明确 ON 时下面的 DEAL 行才显示; OFF/留空 = 全部隐藏(活动结束拨这里即可)
+DEALS_ENABLED: ON
+# 每行一条: 门槛 | 赠品 | 范围 | 有效期 | auto或manual (第3段起可省, 后两段顺序随意)。
+# 范围: direct / phone / online(在线渠道,不含电话) / all / 逗号清单(如 doordash,phone)。
+# 有效期文字里写了日期(如 8/31 或 2026-08-31)则最后有效日当天打烊时自动从网站
+# 消失(含当天营业时段; 该日休息则次日0点; 营业到凌晨的撑到实际打烊);
+# 不写年份=今年, 跨年活动请写完整年份; 不含日期=纯展示、永不自动下架。
+# 领取方式: auto=票面显示"自动生效", manual="下单时请告知", select="结账时请选择";
+# 不写=不显示领取方式。
+# 文字标记通用: ~~旧价~~ 显示为划线, **新价** 显示为红色醒目
+DEAL_1: SPEND ~~$35~~ **$30**+ · 满 ~~$35~~ **$30** | FREE Egg Roll · 送春卷 | direct | select
+DEAL_2: SPEND ~~$55~~ **$50**+ · 满 ~~$55~~ **$50** | FREE Crab Rangoon · 送蟹角 | direct | select
+# 更多范围写法示例(去掉行首#即生效):
+# DEAL_3: SPEND $20+ · 满 $20 | FREE Wonton Soup · 送云吞汤 | phone | Valid through 8/31 · 有效期至 8/31
+# DEAL_4: SPEND $25+ · 满 $25 | FREE Soft Drink · 送汽水 | all
+# DEAL_5: SPEND $40+ · 满 $40 | FREE Fried Rice · 送炒饭 | doordash,phone
+# DEAL_6: SPEND $30+ · 满 $30 | FREE Spring Roll · 送春卷 | all | Valid through 8/31 · 有效期至 8/31 | auto
+# DEAL_7: SPEND $45+ · 满 $45 | 10% OFF · 九折 | phone | manual
+# 区标题(可改可留空用默认)
+DEAL_LABEL: 🎁 SPECIAL DEALS · 满额赠送（各票适用范围见票面标签）
+
+# ── 倒计时提前量(分钟) ──
+# 打烊/开门横幅提前多少分钟出现(共用; 0=关闭该横幅)
+COUNTDOWN_MINUTES: 60
+# 午市倒计时提前多少分钟开始(独立于打烊倒计时的 COUNTDOWN_MINUTES)
+LUNCH_COUNTDOWN_MINUTES: 60
+
+# ── 显示开关(去掉行首#号生效) ──
+# 进度环总开关(留空或删除=开启; 写 OFF 关闭所有按钮的进度环)
+# ORDER_PROGRESS_RING: OFF
+# 打烊后十格进度前的充电闪电(留空=开启; 写 OFF 关闭)
+# ORDER_BOLT: OFF
+
+# 便利贴公告内容在 data/announcements.txt · 菜单在 data/menu_data.txt
+# ──────────────────────── 以下为其余外观与文案设置 ────────────────────────
+
 # ══════════════════════ 餐厅名称与品牌 ══════════════════════
 # ★ 改店名只需要改下面这两行（英文名一行、中文名一行）★
 # 全站所有地方（导航/大标题/页脚/介绍文字里的店名）都会自动跟着变
@@ -34,24 +102,6 @@ MAP_LINK: https://maps.google.com/?q=18+N+Main+St+Fond+du+Lac
 # 删掉本行或留空 = 按访客本地时间(旧行为)
 TIMEZONE: America/Chicago
 
-# ── 临时歇业/放假总闸(双钥匙) ──
-# 第一把钥匙: 下面这行拨到 ON, CLOSURE 里的日期/文字才会奏效;
-# OFF(或留空/删掉) = 一切照常营业, 哪怕日期还填着——放假回来只需拨回 OFF,
-# 日期可以留着当模板, 明年改个日期再拨 ON
-CLOSURE_ENABLED: OFF
-
-# 第二把钥匙: 歇业内容。推荐写日期区间(含首尾两天), 到点自动歇业、过期自动恢复:
-#   CLOSURE: 2026-07-13 to 2026-07-19 春节休假 · Closed for Holiday, back 7/20
-# 也认美式 7/13 - 7/19(不写年=今年, 跨年如 12/28 - 1/3 自动进位); 只写一个日期=只关那天;
-# 只填 ON 或不含日期的文字 = 立即无限期歇业(删空才恢复)。整行文字原样显示在顶部横幅。
-# 歇业期间: 官网直订红色不可点; 第三方平台保持蓝色"打烊中·可预订"仍可点;
-# 进度环用整段歇业时长从0%匀速回充, 重新开门瞬间恰好100%; 菜单/公告照常可浏览
-CLOSURE: Our hard working team is taking a well deserved break on 2026-08-10 to 2026-08-20 休假 · Closed for Break, back 8/21
-
-# 预告横幅: 歇业开始前几天起, 页面顶部出现一条独立的琥珀色"预告"横幅(与红色打烊
-# 横幅是两条分开的横幅, 可同时叠放); 进入歇业期后由它显示 CLOSURE 原文
-CLOSURE_NOTICE_DAYS: 14
-CLOSURE_NOTICE_PREFIX: 📢 Advance Notice 提前通知 —
 
 HOURS_MON: Closed 休息
 HOURS_TUE: 10:00 AM – 9:30 PM
@@ -136,27 +186,6 @@ ORDER_GROUP_BOTH_NOTE: Delivery for these options — including phone orders —
 ORDER_PHONE_LABEL: ☎ 电话订餐 Call to Order
 ORDER_PHONE_STATUS: ON
 
-# ── 满额赠送(SPECIAL DEALS) ──
-# 总开关: 仅明确 ON 时下面的 DEAL 行才显示; OFF/留空 = 全部隐藏(活动结束拨这里即可)
-DEALS_ENABLED: ON
-# 每行一条: 门槛 | 赠品 | 范围 | 有效期 | auto或manual (第3段起可省, 后两段顺序随意)。
-# 范围: direct / phone / online(在线渠道,不含电话) / all / 逗号清单(如 doordash,phone)。
-# 有效期文字里写了日期(如 8/31 或 2026-08-31)则最后有效日当天打烊时自动从网站
-# 消失(含当天营业时段; 该日休息则次日0点; 营业到凌晨的撑到实际打烊);
-# 不写年份=今年, 跨年活动请写完整年份; 不含日期=纯展示、永不自动下架。
-# 领取方式: auto=票面显示"自动生效", manual="下单时请告知", select="结账时请选择";
-# 不写=不显示领取方式。
-# 文字标记通用: ~~旧价~~ 显示为划线, **新价** 显示为红色醒目
-DEAL_1: SPEND subtotal of $35+ · 满 $35 | FREE Egg Roll · 送春卷 | direct | select
-DEAL_2: SPEND subtotal of $55+ · 满 $55 | FREE Crab Rangoon · 送蟹角 | direct | select
-# 更多范围写法示例(去掉行首#即生效):
-# DEAL_3: SPEND $20+ · 满 $20 | FREE Wonton Soup · 送云吞汤 | phone | Valid through 8/31 · 有效期至 8/31
-# DEAL_4: SPEND $25+ · 满 $25 | FREE Soft Drink · 送汽水 | all
-# DEAL_5: SPEND $40+ · 满 $40 | FREE Fried Rice · 送炒饭 | doordash,phone
-# DEAL_6: SPEND $30+ · 满 $30 | FREE Spring Roll · 送春卷 | all | Valid through 8/31 · 有效期至 8/31 | auto
-# DEAL_7: SPEND $45+ · 满 $45 | 10% OFF · 九折 | phone | manual
-# 区标题(可改可留空用默认)
-DEAL_LABEL: 🎁 SPECIAL DEALS · 满额赠送（各票适用范围见票面标签）
 # 官网直订下的银行卡提醒(支付提示, 不随活动开关; 留空=隐藏)
 ORDER_DIRECT_CARD_NOTE: 💳 Paying with card? Please make sure your card is not locked to avoid delay of your order · 如用银行卡支付，请确认卡片未被锁定，以免延误订单
 ORDER_STRIP_LABEL: Order Online 在线订餐:
@@ -194,9 +223,6 @@ ORDER_EATSTREET_STATUS: ON
 
 # ── 开门/打烊倒计时横幅 ────────────────────────────────────
 # 距开门或打烊不足 N 分钟时，网站顶部显示倒计时（改成 0 = 关闭此功能）
-# 进度环总开关(留空或删除=开启; 写 OFF 关闭所有按钮的进度环)
-# ORDER_PROGRESS_RING: OFF
-COUNTDOWN_MINUTES: 60
 # {MIN} 会自动替换成剩余分钟数
 COUNTDOWN_OPENING: ⏰ Opening soon — {MIN} min · 即将开门，还有 {MIN} 分钟
 COUNTDOWN_CLOSING: ⏰ Closing soon — {MIN} min · 即将打烊，还有 {MIN} 分钟
@@ -211,8 +237,6 @@ COUNTDOWN_CLOSED_LINK_TEXT: Store Hours 查看营业时间 →
 # 午市倒计时(与打烊倒计时同机制); 午市结束后显示"晚市"提示 DINNER_NOTE_MINUTES
 # 分钟(0=不提示)后自动隐藏; 打烊倒计时的优先级始终更高
 LUNCH_HOURS: 11:00 AM – 3:30 PM
-# 午市倒计时提前多少分钟开始(独立于打烊倒计时的 COUNTDOWN_MINUTES)
-LUNCH_COUNTDOWN_MINUTES: 60
 COUNTDOWN_LUNCH_END: 🍜 Lunch hours ending — {MIN} min · 午市即将结束，还有 {MIN} 分钟
 COUNTDOWN_DINNER: 🍽 Dinner hours
 DINNER_NOTE_MINUTES: 90
