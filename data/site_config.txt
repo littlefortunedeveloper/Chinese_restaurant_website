@@ -276,7 +276,8 @@ MENUPAGE_TITLE: Our Menu
 MENUPAGE_SUB: 菜单 · MENÚ
 MENUPAGE_NOTE: This menu contains the same items and prices in three languages · 本菜单三语内容及价格完全一致
 # 菜单顶部的醒目价格声明（金色横幅；留空则自动隐藏）
-MENU_PRICE_NOTICE: ⓘ Prices shown are our RESTAURANT prices (dine-in & pick-up). Prices on delivery platforms — DoorDash, Uber Eats, Grubhub, Menufy, EatStreet — will be HIGHER due to fees charged by those platforms. · 本菜单显示的是餐厅价格（堂食/自取）。各外卖平台因收取平台费用，价格会高于餐厅价格。
+MENU_PRICE_NOTICE: ⓘ Prices shown are our RESTAURANT prices (dine-in, pick-up & call-in requested delivery). Call-in requested delivery may be subject to a delivery fee; fees may vary based on delivery distance and payment type — please ask for details when you call to place a delivery order. Prices on delivery platforms — DoorDash, Uber Eats, Grubhub, Menufy, EatStreet — will be HIGHER due to fees charged by those platforms. · 本菜单显示的是餐厅价格（堂食、自取及电话预约送餐）。电话预约送餐可能收取送餐费，费用依配送距离与支付方式而定，致电下单时请咨询详情。各外卖平台因收取平台费用，价格会高于餐厅价格。
+
 MENU_LEGEND: ◆ 辣 Hot Picante = Spicy (adjustable 辣度可调) · 小 sm/peq. = Small · 大 lg/grd. = Large · Prices subject to change 价格可能变动
 MENU_LOADING: Loading menu… 菜单加载中…
 # 搜索栏文字
