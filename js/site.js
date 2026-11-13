@@ -143,6 +143,13 @@ const ORDER_PLATFORMS = [
 ];
 
 /* ── 营业时间解析："11:00 AM – 9:30 PM" → 分钟区间；Closed/不可解析 → null ── */
+const _hoursWarned = {};                                       // 同一条消息只提醒一次, 避免刷屏
+function warnHoursOnce(msg) {
+  if (_hoursWarned[msg]) return;
+  _hoursWarned[msg] = 1;
+  try { console.warn(msg); } catch (e) {}
+}
+
 function parseTimeRange(str) {
   if (!str || /closed|休息/i.test(str)) return null;
   const m = []; {                                              // 不用matchAll: Safari 13前抛错
@@ -150,6 +157,14 @@ function parseTimeRange(str) {
     while ((mm = re.exec(String(str)))) m.push(mm);
   }
   if (m.length < 2) return null;
+  /* 钟点合法性: 12小时制 时0–12、分0–59。越界(如 "25:99 PM")是明显笔误——
+     不猜测、不编造时段, 该日按"未设置营业时间"处理, 并提醒一次 */
+  for (let i = 0; i < 2; i++) {
+    if (+m[i][1] > 12 || +m[i][2] > 59) {
+      warnHoursOnce('[hours] 时间越界(时需0–12、分需0–59)，该日按未营业处理：' + str);
+      return null;
+    }
+  }
   const toMin = (h, mm, ap) => (parseInt(h) % 12 + (/pm/i.test(ap) ? 12 : 0)) * 60 + parseInt(mm);
   let apO = m[0][3], apC = m[1][3];
   let open  = toMin(m[0][1], m[0][2], apO);
@@ -161,7 +176,7 @@ function parseTimeRange(str) {
   if (open >= close && /pm/i.test(apO) === /pm/i.test(apC)) {
     if (/pm/i.test(apO)) open -= 720;   // PM–PM → 开门按AM算
     else                 close += 720;  // AM–AM → 打烊按PM算
-    try { console.warn('[hours] 疑似上下午打错，已按 ' + str + ' 的合理日间时段解读'); } catch(e) {}
+    warnHoursOnce('[hours] 疑似上下午打错，已按 ' + str + ' 的合理日间时段解读');
   }
   return { open, close };
 }
@@ -381,10 +396,26 @@ function parseClosure(cfg, now) {                    // 纯解析: null | {msg[,
   if (!ds.length) return { msg };                    // 不含日期 = 无限期歇业
   now = now || restaurantNow(cfg);
   ds.forEach(d => { if (d[0] === null) d[0] = now.getFullYear(); });   // 缺年份=今年
-  if (ds.length === 1) ds.push(ds[0].slice());       // 单日 = 首尾同一天
-  let start = new Date(ds[0][0], ds[0][1] - 1, ds[0][2]);
-  let end   = new Date(ds[1][0], ds[1][1] - 1, ds[1][2] + 1);          // 含末日 → 次日0点
-  if (end <= start) end = new Date(ds[1][0] + 1, ds[1][1] - 1, ds[1][2] + 1);  // 跨年进位
+  /* 日期合法化: 月份越界 → 不当作日期; 日越界(如 2/30) → 收到当月最后一天, 不溢出到下月 */
+  const fx = [];
+  for (const d of ds) {
+    if (d[1] < 1 || d[1] > 12) continue;
+    const lastDay = new Date(d[0], d[1], 0).getDate();
+    fx.push([d[0], d[1], Math.min(Math.max(d[2], 1), lastDay)]);
+  }
+  if (!fx.length) return { msg };                    // 全是非法日期 → 无限期(防呆)
+  if (fx.length === 1) fx.push(fx[0].slice());       // 单日 = 首尾同一天
+  let start = new Date(fx[0][0], fx[0][1] - 1, fx[0][2]);
+  let end   = new Date(fx[1][0], fx[1][1] - 1, fx[1][2] + 1);          // 含末日 → 次日0点
+  if (end <= start) {
+    const rolled = new Date(fx[1][0] + 1, fx[1][1] - 1, fx[1][2] + 1);
+    if (rolled - start <= 180 * 864e5) end = rolled;  // 真·跨年区间(如 12/30 到 1/2)
+    else {                                           /* 写反了(如 11/27 to 11/26): 若按跨年解读
+                                                        会把店关掉近一年 —— 按先后次序纠正 */
+      start = new Date(fx[1][0], fx[1][1] - 1, fx[1][2]);
+      end   = new Date(fx[0][0], fx[0][1] - 1, fx[0][2] + 1);
+    }
+  }
   if (isNaN(start.getTime()) || isNaN(end.getTime())) return { msg };  // 日期非法→无限期(防呆)
   return { msg, start, end };
 }

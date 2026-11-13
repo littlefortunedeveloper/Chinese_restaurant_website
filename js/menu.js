@@ -74,6 +74,7 @@ function parseAvailability(str) {
   const seen = new Set(), times = [];
   const _re = /(\d{1,2})[:：](\d{2})\s*(AM|PM)/gi; let m;      // 不用 matchAll: Safari 13 前会抛错
   while ((m = _re.exec(String(str)))) {
+    if (+m[1] > 12 || +m[2] > 59) continue;             // 钟点越界(如 25:99)= 笔误, 不采信
     const v = toMin(m[1], m[2], m[3]);
     if (!seen.has(v)) { seen.add(v); times.push(v); }
   }

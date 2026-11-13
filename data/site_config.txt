@@ -29,7 +29,7 @@ CLOSURE_ENABLED: ON
 # 只填 ON 或不含日期的文字 = 立即无限期歇业(删空才恢复)。整行文字原样显示在顶部横幅。
 # 歇业期间: 官网直订红色不可点; 第三方平台保持蓝色"打烊中·可预订"仍可点;
 # 进度环用整段歇业时长从0%匀速回充, 重新开门瞬间恰好100%; 菜单/公告照常可浏览
-CLOSURE:We will be CLOSED on November 26th. Normal hours resume November 27th.
+CLOSURE: Closed on 2026-11-26 感恩节休息一天 · Closed for Thanksgiving Day, back Friday 11/27 with normal hours
 
 # 预告横幅: 歇业开始前几天起, 页面顶部出现一条独立的琥珀色"预告"横幅(与红色打烊
 # 横幅是两条分开的横幅, 可同时叠放); 进入歇业期后由它显示 CLOSURE 原文
@@ -47,8 +47,8 @@ DEALS_ENABLED: ON
 # 领取方式: auto=票面显示"自动生效", manual="下单时请告知", select="结账时请选择";
 # 不写=不显示领取方式。
 # 文字标记通用: ~~旧价~~ 显示为划线, **新价** 显示为红色醒目
-DEAL_1: SPEND SUBTOTAL OF ~~$35~~ **$30**+ · 满 ~~$35~~ **$30** | FREE Egg Roll · 送春卷 | direct | select
-DEAL_2: SPEND SUBTOTAL OF ~~$55~~ **$50**+ · 满 ~~$55~~ **$50** | FREE Crab Rangoon · 送蟹角 | direct | select
+DEAL_1: SPEND ~~$35~~ **$30**+ · 满 ~~$35~~ **$30** | FREE Egg Roll · 送春卷 | direct | select
+DEAL_2: SPEND ~~$55~~ **$50**+ · 满 ~~$55~~ **$50** | FREE Crab Rangoon · 送蟹角 | direct | select
 # 更多范围写法示例(去掉行首#即生效):
 # DEAL_3: SPEND $20+ · 满 $20 | FREE Wonton Soup · 送云吞汤 | phone | Valid through 8/31 · 有效期至 8/31
 # DEAL_4: SPEND $25+ · 满 $25 | FREE Soft Drink · 送汽水 | all
@@ -76,12 +76,12 @@ LUNCH_COUNTDOWN_MINUTES: 60
 # ══════════════════════ 餐厅名称与品牌 ══════════════════════
 # ★ 改店名只需要改下面这两行（英文名一行、中文名一行）★
 # 全站所有地方（导航/大标题/页脚/介绍文字里的店名）都会自动跟着变
-NAME: Chinatown Kitchen
-NAME_ZH: 中城
+NAME: Restaurant
+NAME_ZH: 饭店
 # 导航栏圆形logo里的单个汉字
-LOGO_CHAR: 店
+LOGO_CHAR: 饭
 TAGLINE: American Chinese Cuisine · Family Owned for Many Years
-TAGLINE_ZH: 美式中餐 · 家族经营多年
+TAGLINE_ZH: 美式中餐 · 家族经营很多年
 
 # 浏览器标签页标题
 PAGE_TITLE_HOME: Home
